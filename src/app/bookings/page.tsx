@@ -243,14 +243,25 @@ export default function BookingsPage() {
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label className="text-gray-600 font-bold ml-1">วันที่เข้ารับบริการ</Label>
-                                        <Input
-                                            type="date"
-                                            className="h-14 rounded-2xl bg-gray-50 border-none"
-                                            value={form.bookingDate}
-                                            onChange={e => setForm({ ...form, bookingDate: e.target.value })}
-                                        />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-gray-600 font-bold ml-1">วันที่เข้ารับบริการ</Label>
+                                            <Input
+                                                type="date"
+                                                className="h-14 rounded-2xl bg-gray-50 border-none"
+                                                value={form.bookingDate}
+                                                onChange={e => setForm({ ...form, bookingDate: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-gray-600 font-bold ml-1">กำหนดรับรถ (โดยประมาณ)</Label>
+                                            <Input
+                                                type="datetime-local"
+                                                className="h-14 rounded-2xl bg-gray-50 border-none"
+                                                value={form.pickupDate}
+                                                onChange={e => setForm({ ...form, pickupDate: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">

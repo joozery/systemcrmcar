@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Member from '@/models/Member';
+import Service from '@/models/Service';
+import { sendLinePushMessage } from '@/lib/line';
 
 export async function PUT(
     req: NextRequest,
@@ -17,94 +19,87 @@ export async function PUT(
             id,
             { status, updatedAt: new Date() },
             { new: true }
-        ).populate('customerId');
+        ).populate('customerId').populate('serviceId');
 
         if (!booking) {
             return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
         }
 
-        // If status changes to 'เสร็จสิ้น' (Finished), send a LINE notification
-        if (status === 'เสร็จสิ้น' && booking.customerId && booking.customerId.lineUserId) {
-            await sendLineNotification(booking.customerId.lineUserId, booking);
+        const lineUserId = booking.customerId?.lineUserId;
+        const customerName = booking.customerId?.firstName || 'ลูกค้า';
+        const carPlate = booking.carPlate || '';
+        const serviceName = booking.serviceId?.name || 'บริการคาร์ดีเทลลิ่ง';
+
+        let formattedPickup = '-';
+        if (booking.pickupDate) {
+            formattedPickup = new Date(booking.pickupDate).toLocaleDateString('th-TH', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
         }
 
-        return NextResponse.json(booking);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-}
-
-async function sendLineNotification(lineUserId: string, booking: any) {
-    const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-    if (!LINE_ACCESS_TOKEN) return;
-
-    try {
-        const message = {
-            to: lineUserId,
-            messages: [
-                {
+        if (lineUserId) {
+            if (status === 'กำลังดำเนินการ') {
+                await sendLinePushMessage(lineUserId, [{
                     type: 'flex',
-                    altText: 'รถของคุณพร้อมส่งมอบแล้ว! 🚗',
+                    altText: 'อัปเดตสถานะรถของคุณ: กำลังดำเนินการ 🛠️',
                     contents: {
                         type: 'bubble',
                         header: {
                             type: 'box',
                             layout: 'vertical',
-                            contents: [
-                                {
-                                    type: 'text',
-                                    text: 'รถของคุณพร้อมแล้ว!',
-                                    weight: 'bold',
-                                    size: 'xl',
-                                    color: '#000000'
-                                }
-                            ],
-                            backgroundColor: '#bbfc2f'
+                            contents: [{ type: 'text', text: 'กำลังเริ่มงาน 🛠️', weight: 'bold', size: 'xl', color: '#ffffff' }],
+                            backgroundColor: '#f97316' // Orange
                         },
                         body: {
                             type: 'box',
                             layout: 'vertical',
                             contents: [
+                                { type: 'text', text: `สวัสดีครับคุณ ${customerName}`, size: 'sm', margin: 'md' },
+                                { type: 'text', text: `รถทะเบียน ${carPlate} ของคุณกำลังเริ่มดำเนินการ ${serviceName} แล้วครับ ทีมช่างกำลังดูแลอย่างเต็มที่!`, wrap: true, size: 'sm', margin: 'md' },
+                                { type: 'separator', margin: 'lg' },
                                 {
-                                    type: 'text',
-                                    text: `สวัสดีครับคุณ ${booking.customerId.firstName} รถทะเบียน ${booking.carPlate} ของคุณดำเนินการ ${booking.serviceId?.name || 'บริการ'} เสร็จเรียบร้อยแล้วครับ`,
-                                    wrap: true,
-                                    size: 'sm'
-                                },
-                                {
-                                    type: 'separator',
-                                    margin: 'md'
-                                },
-                                {
-                                    type: 'box',
-                                    layout: 'vertical',
-                                    margin: 'md',
-                                    contents: [
-                                        {
-                                            type: 'text',
-                                            text: 'เชิญรับรถได้ที่ร้านเลยครับ 🙏',
-                                            size: 'sm',
-                                            color: '#666666'
-                                        }
+                                    type: 'box', layout: 'vertical', margin: 'md', contents: [
+                                        { type: 'text', text: `กำหนดรับรถโดยประมาณ:`, size: 'xs', color: '#aaaaaa' },
+                                        { type: 'text', text: formattedPickup, size: 'sm', weight: 'bold', color: '#f97316' }
                                     ]
                                 }
                             ]
                         }
                     }
-                }
-            ]
-        };
+                }]);
+            } else if (status === 'เสร็จสิ้น') {
+                await sendLinePushMessage(lineUserId, [{
+                    type: 'flex',
+                    altText: 'รถของคุณเสร็จเรียบร้อยแล้ว! ✨',
+                    contents: {
+                        type: 'bubble',
+                        header: {
+                            type: 'box',
+                            layout: 'vertical',
+                            contents: [{ type: 'text', text: 'รถพร้อมรับแล้ว! ✨', weight: 'bold', size: 'xl', color: '#000000' }],
+                            backgroundColor: '#bbfc2f' // Brand Green
+                        },
+                        body: {
+                            type: 'box',
+                            layout: 'vertical',
+                            contents: [
+                                { type: 'text', text: `สวัสดีครับคุณ ${customerName}`, size: 'sm', margin: 'md' },
+                                { type: 'text', text: `รถทะเบียน ${carPlate} ดำเนินการ ${serviceName} เสร็จเรียบร้อยแล้วครับ ✨เงาวับพร้อมใช้งาน!`, wrap: true, size: 'sm', margin: 'md' },
+                                { type: 'separator', margin: 'lg' },
+                                {
+                                    type: 'box', layout: 'vertical', margin: 'md', contents: [
+                                        { type: 'text', text: 'มารับรถได้เลยครับ ขอบคุณที่ใช้บริการ 🙏', size: 'sm', color: '#666666' }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }]);
+            }
+        }
 
-        await fetch('https://api.line.me/v2/bot/message/push', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`
-            },
-            body: JSON.stringify(message)
-        });
-
-    } catch (error) {
-        console.error('Failed to send LINE notification:', error);
+        return NextResponse.json(booking);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
