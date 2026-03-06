@@ -66,12 +66,9 @@ export default function RegisterMemberPage() {
                         <p className="text-gray-500 mb-8 leading-relaxed">
                             ขอบคุณสำหรับการสมัครสมาชิก คุณสามารถเริ่มสะสมแต้มและรับสิทธิพิเศษมากมายผ่าน LINE ได้ทันทีครับ
                         </p>
-                        <Button
-                            onClick={() => window.location.href = 'https://line.me/R/ti/p/@your-bot-id'} // Redirect back to LINE if needed
-                            className="w-full bg-black text-white hover:bg-gray-800 rounded-2xl h-14 font-bold text-lg shadow-lg transition-all"
-                        >
-                            กลับไปที่ LINE
-                        </Button>
+                        <div className="w-full bg-gray-50 text-gray-400 rounded-2xl p-4 font-medium text-sm border border-gray-100">
+                            คุณสามารถกดกากบาท (X) ที่มุมบนเพื่อปิดหน้านี้ได้เลยครับ
+                        </div>
                     </CardContent>
                 </Card>
             </div>
