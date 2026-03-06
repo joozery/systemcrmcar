@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Member from '@/models/Member';
 import Service from '@/models/Service';
+import { sendLinePushMessage } from '@/lib/line';
 
 export async function GET() {
     try {
@@ -71,6 +72,21 @@ export async function POST(req: NextRequest) {
                 }
             }
         });
+
+        // Send LINE Push Notification
+        if (member.lineUserId) {
+            const formattedDate = new Date(bookingDate).toLocaleDateString('th-TH', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            const messageText = `🔔 ยืนยันการจองคิวรับบริการ\n\nสวัสดีคุณ ${member.firstName} 👋\nทางร้านได้รับคิวจองของคุณเรียบร้อยแล้ว\n\n📌 บริการ: ${service.name}\n🚘 ทะเบียนรถ: ${carPlate}\n📅 วันที่นัดหมาย: ${formattedDate}\n\nขอบคุณที่ไว้วางใจให้เราดูแลรถของคุณครับ 🙏`;
+
+            await sendLinePushMessage(member.lineUserId, [
+                {
+                    type: 'text',
+                    text: messageText
+                }
+            ]);
+        }
 
         return NextResponse.json(booking, { status: 201 });
     } catch (error: any) {
