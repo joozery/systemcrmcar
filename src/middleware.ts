@@ -9,6 +9,9 @@ export async function middleware(request: NextRequest) {
     if (
         pathname.startsWith('/login') ||
         pathname.startsWith('/api/auth') ||
+        pathname.startsWith('/api/webhook') ||
+        pathname.startsWith('/api/members/register') ||
+        pathname.startsWith('/register-member') ||
         pathname.includes('.') // for images, icons, etc.
     ) {
         // If user is already logged in and tries to go to /login, redirect to /

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Phone, CheckCircle, Loader2 } from "lucide-react";
 
-export default function RegisterMemberPage() {
+function RegisterMemberContent() {
     const searchParams = useSearchParams();
     const userId = searchParams.get('uid');
 
@@ -167,5 +167,17 @@ export default function RegisterMemberPage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function RegisterMemberPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#f3f5f8] flex items-center justify-center p-4">
+                <Loader2 className="animate-spin text-[#bbfc2f]" size={48} />
+            </div>
+        }>
+            <RegisterMemberContent />
+        </Suspense>
     );
 }
