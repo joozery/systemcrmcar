@@ -22,7 +22,7 @@ export function MainChartRow({ chartData }: { chartData?: any[] }) {
                     <CardTitle className="text-lg">กิจกรรมการจองคิว</CardTitle>
                     <div className="flex gap-4 text-sm">
                         <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-black"></span> ออนไลน์</div>
-                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#bbfc2f]"></span> หน้าร้าน</div>
+                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#2563eb]"></span> หน้าร้าน</div>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -31,15 +31,15 @@ export function MainChartRow({ chartData }: { chartData?: any[] }) {
                             <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorOffline" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#bbfc2f" stopOpacity={0.4} />
-                                        <stop offset="95%" stopColor="#bbfc2f" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid vertical={true} horizontal={true} strokeDasharray="3 3" verticalFill={['#f9fafb', '#fff']} fillOpacity={0.2} stroke="#f0f0f0" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 12 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tickFormatter={() => ''} width={10} />
                                 <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                <Area type="monotone" dataKey="offline" stroke="#bbfc2f" strokeWidth={3} fillOpacity={1} fill="url(#colorOffline)" dot={false} activeDot={{ r: 6, fill: '#bbfc2f', stroke: '#fff', strokeWidth: 2 }} />
+                                <Area type="monotone" dataKey="offline" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorOffline)" dot={false} activeDot={{ r: 6, fill: '#2563eb', stroke: '#fff', strokeWidth: 2 }} />
                                 <Area type="monotone" dataKey="online" stroke="#111" strokeWidth={3} fill="none" dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -66,12 +66,12 @@ export function MainChartRow({ chartData }: { chartData?: any[] }) {
                         <div className="w-[60%]">
                             <p className="font-bold text-gray-900 leading-tight">10 ชม.</p>
                             <p className="text-[10px] text-muted-foreground mb-1.5">เวลาเฉลี่ย/คัน</p>
-                            <Progress value={45} className="h-1.5 bg-gray-100 w-1/2" indicatorClassName="bg-[#bbfc2f]" />
+                            <Progress value={45} className="h-1.5 bg-gray-100 w-1/2" indicatorClassName="bg-[#2563eb]" />
                         </div>
                     </div>
 
                     {/* Big Circular Graphic on the right like mockup */}
-                    <div className="absolute -right-12 top-16 w-52 h-52 bg-[#bbfc2f] rounded-full flex items-center justify-center p-4 z-0">
+                    <div className="absolute -right-12 top-16 w-52 h-52 bg-[#2563eb] rounded-full flex items-center justify-center p-4 z-0">
                         <div className="w-full h-full bg-white/20 rounded-full flex items-center justify-center">
                             <Star className="text-white w-20 h-20 fill-current opacity-80" />
                         </div>

@@ -63,11 +63,11 @@ export default function LoginPage() {
             <div className="relative z-20 w-full max-w-md px-6 animate-in fade-in zoom-in duration-700">
                 {/* Logo or Brand */}
                 <div className="flex flex-col items-center mb-10">
-                    <div className="w-16 h-16 bg-[#bbfc2f] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#bbfc2f]/30 mb-6 rotate-3">
-                        <Car size={32} className="text-black -rotate-3" />
+                    <div className="w-16 h-16 bg-[#2563eb] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#2563eb]/30 mb-6 rotate-3">
+                        <Car size={32} className="text-white -rotate-3" />
                     </div>
                     <h1 className="text-4xl font-black text-white tracking-tighter mb-2">
-                        SYSTEM <span className="text-[#bbfc2f]">CAR POINT</span>
+                        SYSTEM <span className="text-[#2563eb]">CAR POINT</span>
                     </h1>
                     <p className="text-gray-400 font-medium tracking-wide">MANAGEMENT SYSTEM</p>
                 </div>
@@ -88,11 +88,11 @@ export default function LoginPage() {
                                 <Input
                                     required
                                     placeholder="Username"
-                                    className="h-14 bg-white/5 border-white/10 rounded-2xl pl-12 text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-[#bbfc2f]/50 transition-all font-bold"
+                                    className="h-14 bg-white/5 border-white/10 rounded-2xl pl-12 text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-[#2563eb]/50 transition-all font-bold"
                                     value={formData.username}
                                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                                 />
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#bbfc2f] transition-colors" size={20} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#2563eb] transition-colors" size={20} />
                             </div>
                         </div>
 
@@ -103,15 +103,15 @@ export default function LoginPage() {
                                     required
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Password"
-                                    className="h-14 bg-white/5 border-white/10 rounded-2xl pl-12 pr-12 text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-[#bbfc2f]/50 transition-all font-bold"
+                                    className="h-14 bg-white/5 border-white/10 rounded-2xl pl-12 pr-12 text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-[#2563eb]/50 transition-all font-bold"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#bbfc2f] transition-colors" size={20} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#2563eb] transition-colors" size={20} />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#bbfc2f] transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#2563eb] transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full h-14 bg-[#bbfc2f] text-black hover:bg-[#a6e02a] rounded-2xl font-black text-lg shadow-xl shadow-[#bbfc2f]/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full h-14 bg-[#2563eb] text-white hover:bg-blue-700 rounded-2xl font-black text-lg shadow-xl shadow-[#2563eb]/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                         >
                             {isLoading ? (
                                 <Loader2 className="animate-spin" size={24} />
@@ -140,7 +140,7 @@ export default function LoginPage() {
             </div>
 
             {/* Decorative Elements */}
-            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-[#bbfc2f]/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-[#2563eb]/10 rounded-full blur-[100px] pointer-events-none"></div>
             <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
         </div>
     );
