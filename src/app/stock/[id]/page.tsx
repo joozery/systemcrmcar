@@ -78,14 +78,14 @@ export default function StockDetailPage({ params }: { params: Promise<{ id: stri
             <main className="flex-1 px-8 py-8 overflow-y-auto w-full no-scrollbar relative min-h-screen">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-[80vh]">
-                        <Loader2 className="h-10 w-10 animate-spin text-[#bbfc2f] mb-4" />
+                        <Loader2 className="h-10 w-10 animate-spin text-[#2563eb] mb-4" />
                         <p className="text-gray-500">กำลังโหลดรายละเอียดสินค้า...</p>
                     </div>
                 ) : !product ? (
                     <div className="flex flex-col items-center justify-center h-[80vh]">
                         <p className="text-gray-500">ไม่พบสินค้าที่คุณต้องการ</p>
                         <Link href="/stock">
-                            <Button className="mt-4 bg-[#bbfc2f] text-black hover:bg-[#a3e635]">กลับสู่หน้าสต็อก</Button>
+                            <Button className="mt-4 bg-[#2563eb] text-white hover:bg-blue-700">กลับสู่หน้าสต็อก</Button>
                         </Link>
                     </div>
                 ) : (
@@ -183,7 +183,7 @@ export default function StockDetailPage({ params }: { params: Promise<{ id: stri
                                                 />
                                                 <button
                                                     onClick={() => setMovementForm({ ...movementForm, amount: movementForm.amount + 1 })}
-                                                    className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all text-[#bbfc2f]"
+                                                    className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all text-[#2563eb]"
                                                 >
                                                     <Plus size={18} />
                                                 </button>
@@ -194,7 +194,7 @@ export default function StockDetailPage({ params }: { params: Promise<{ id: stri
                                             <Label className="text-gray-500 text-xs font-bold uppercase ml-1">หมายเหตุ / Job ID</Label>
                                             <textarea
                                                 placeholder="เช่น เบิกใช้งาน Job Q-00XX หรือ ระบุรหัสบิล"
-                                                className="w-full min-h-[80px] rounded-2xl border border-gray-100 bg-gray-50/50 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#bbfc2f]/50 transition-all"
+                                                className="w-full min-h-[80px] rounded-2xl border border-gray-100 bg-gray-50/50 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/50 transition-all"
                                                 value={movementForm.note}
                                                 onChange={(e) => setMovementForm({ ...movementForm, note: e.target.value })}
                                             />
@@ -293,14 +293,14 @@ export default function StockDetailPage({ params }: { params: Promise<{ id: stri
                                         <Card className="rounded-[2.5rem] border-0 shadow-sm bg-white overflow-hidden">
                                             <CardHeader className="px-8 pt-8 pb-0">
                                                 <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                                    <History size={20} className="text-[#bbfc2f]" />
+                                                    <History size={20} className="text-[#2563eb]" />
                                                     ประวัติการเบิก-จ่าย
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent className="p-6 space-y-4">
                                                 {product.movements && product.movements.length > 0 ? (
                                                     product.movements.map((move: any, index: number) => (
-                                                        <div key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-[#bbfc2f]/30 transition-colors">
+                                                        <div key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-[#2563eb]/30 transition-colors">
                                                             <div className={`p-2 rounded-xl ${move.type === 'IN' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                                                 {move.type === 'IN' ? <Plus size={18} /> : <Minus size={18} />}
                                                             </div>
@@ -348,7 +348,7 @@ export default function StockDetailPage({ params }: { params: Promise<{ id: stri
                                             <Package size={16} /> ยอดคงเหลือปัจจุบัน
                                         </p>
                                         <div className="flex items-end gap-3 mt-4 mb-2">
-                                            <h2 className="text-6xl font-bold tracking-tight text-[#bbfc2f]">{product.quantity}</h2>
+                                            <h2 className="text-6xl font-bold tracking-tight text-[#2563eb]">{product.quantity}</h2>
                                             <span className="text-xl text-gray-400 mb-2">{product.unit}</span>
                                         </div>
                                         <p className="text-sm text-gray-400 mt-4 border-t border-gray-800 pt-4 flex gap-2 items-start">
@@ -361,7 +361,7 @@ export default function StockDetailPage({ params }: { params: Promise<{ id: stri
                                 <Card className="rounded-[2.5rem] border-0 shadow-sm bg-white overflow-hidden p-8 space-y-6">
                                     <div className="space-y-4">
                                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                                            <Sparkles className="text-[#bbfc2f]" size={20} />
+                                            <Sparkles className="text-[#2563eb]" size={20} />
                                             ทางเลือกด่วน
                                         </h3>
                                         <div className="grid grid-cols-1 gap-3">

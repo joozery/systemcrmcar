@@ -31,6 +31,8 @@ export default function BookingsPage() {
         serviceId: "",
         carPlate: "",
         carSize: "M",
+        carBrand: "",
+        carModel: "",
         bookingDate: new Date().toISOString().split('T')[0],
         pickupDate: "",
         price: 0,
@@ -108,6 +110,8 @@ export default function BookingsPage() {
             serviceId: "",
             carPlate: "",
             carSize: "M",
+            carBrand: "",
+            carModel: "",
             bookingDate: new Date().toISOString().split('T')[0],
             pickupDate: "",
             price: 0,
@@ -125,22 +129,44 @@ export default function BookingsPage() {
 
     const handleCustomerChange = (cid: string) => {
         const cust = customers.find(c => c._id === cid);
-        if (cust && cust.cars && cust.cars.length > 0) {
-            setForm({
-                ...form,
-                customerId: cid,
-                carPlate: cust.cars[0].plate,
-                carSize: cust.cars[0].size
-            });
-            // recalculate price based on size if service is selected
+        if (cust) {
+            let nextForm = { ...form, customerId: cid };
+            if (cust.cars && cust.cars.length > 0) {
+                nextForm.carPlate = cust.cars[0].plate;
+                nextForm.carSize = cust.cars[0].size;
+                
+                if (form.serviceId) {
+                    const srv = services.find(s => s._id === form.serviceId);
+                    if (srv) {
+                        nextForm.price = srv.prices[cust.cars[0].size] || 0;
+                    }
+                }
+            }
+            setForm(nextForm);
+        } else {
+            setForm({ ...form, customerId: cid });
+        }
+    };
+
+    const handleCarSelect = (plate: string) => {
+        const cust = customers.find(c => c._id === form.customerId);
+        const car = cust?.cars?.find((c: any) => c.plate === plate);
+        if (car) {
+            let nextPrice = form.price;
             if (form.serviceId) {
                 const srv = services.find(s => s._id === form.serviceId);
                 if (srv) {
-                    setForm(prev => ({ ...prev, customerId: cid, carPlate: cust.cars[0].plate, carSize: cust.cars[0].size, price: srv.prices[cust.cars[0].size] || 0 }));
+                    nextPrice = srv.prices[car.size] || 0;
                 }
             }
-        } else {
-            setForm({ ...form, customerId: cid });
+            setForm({ 
+                ...form, 
+                carPlate: car.plate, 
+                carSize: car.size, 
+                carBrand: car.brand || "", 
+                carModel: car.model || "", 
+                price: nextPrice 
+            });
         }
     };
 
@@ -148,32 +174,33 @@ export default function BookingsPage() {
         <div className="flex bg-[#f3f5f8] h-screen overflow-hidden font-sans w-full">
             <SidebarLeft />
 
-            <main className="flex-1 px-8 py-8 overflow-y-auto w-full no-scrollbar">
+            <main className="flex-1 px-6 py-6 overflow-y-auto w-full no-scrollbar">
                 {/* Header */}
-                <header className="flex justify-between items-center mb-10 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-[#bbfc2f] rounded-3xl flex items-center justify-center shadow-xl shadow-[#bbfc2f]/20">
-                            <Calendar size={32} className="text-black" />
+                <header className="flex justify-between items-center mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#2563eb] rounded-2xl flex items-center justify-center shadow-lg shadow-[#2563eb]/10">
+                            <Calendar size={24} className="text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900 tracking-tight">ระบบจองคิวบริการ</h1>
-                            <p className="text-muted-foreground text-sm font-medium">จัดการตารางคิวงาน เก็บแต้มสมาชิก และแจ้งเตือนลูกค้าผ่าน LINE</p>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight">ระบบจองคิวบริการ</h1>
+                            <p className="text-muted-foreground text-xs font-medium">จัดการตารางคิวงาน และแจ้งเตือนลูกค้าผ่าน LINE</p>
                         </div>
                     </div>
                     <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-[#bbfc2f] text-black hover:bg-[#a3e635] rounded-2xl px-10 py-5 h-auto shadow-lg shadow-[#bbfc2f]/10 border-0 font-black text-lg transition-all transform hover:scale-105 active:scale-95">
-                                <Plus size={24} className="mr-2" />
+                            <Button className="bg-[#2563eb] text-white hover:bg-blue-700 rounded-xl px-6 py-3 h-auto shadow-lg shadow-[#2563eb]/5 border-0 font-bold text-sm transition-all transform hover:scale-105 active:scale-95">
+                                <Plus size={18} className="mr-2" />
                                 จองคิวใหม่
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[750px] rounded-[3rem] p-0 overflow-hidden border-0 shadow-2xl">
-                            <DialogHeader className="bg-[#111311] p-10 text-white relative">
-                                <DialogTitle className="text-3xl font-black text-[#bbfc2f] tracking-tight">ทำรายการจองคิวเสร็จใน 1 นาที</DialogTitle>
-                                <p className="text-gray-400 font-medium">ระบุชื่อลูกค้าและบริการ เพื่อคำนวณแต้มและกำหนดวันนัด</p>
+                        <DialogContent className="sm:max-w-[700px] rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+                            <DialogHeader className="bg-[#0a0b0a] p-6 text-white relative">
+                                <DialogTitle className="text-2xl font-black text-[#2563eb] tracking-tight">ทำรายการจองคิว</DialogTitle>
+                                <p className="text-gray-400 text-xs font-medium">ระบุชื่อลูกค้าและบริการ เพื่อกำหนดวันนัด</p>
                             </DialogHeader>
 
-                            <form onSubmit={handleCreateBooking} className="p-10 bg-white grid grid-cols-2 gap-8">
+                            <div className="max-h-[70vh] overflow-y-auto p-6 no-scrollbar">
+                                <form onSubmit={handleCreateBooking} className="grid grid-cols-2 gap-6">
                                 <div className="space-y-6">
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center ml-1">
@@ -189,54 +216,91 @@ export default function BookingsPage() {
                                         </div>
                                         <select
                                             required
-                                            className="w-full h-14 rounded-2xl bg-gray-50 border-none px-4 text-gray-900 focus:ring-2 focus:ring-[#bbfc2f] transition-all"
+                                            className="w-full h-11 rounded-xl bg-gray-50 border-none px-4 text-sm text-gray-900 focus:ring-2 focus:ring-[#2563eb] transition-all"
                                             value={form.customerId}
                                             onChange={(e) => handleCustomerChange(e.target.value)}
                                         >
-                                            <option value="">เลือกจากรายชื่อสมาชิก</option>
+                                            <option value="">เลือกสมาชิก</option>
                                             {customers.map(c => (
-                                                <option key={c._id} value={c._id}>{c.firstName} {c.lastName} ({c.phone})</option>
+                                                <option key={c._id} value={c._id}>{c.firstName} {c.lastName}</option>
                                             ))}
                                         </select>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-gray-600 font-bold ml-1">เลือกบริการ</Label>
+                                        <Label className="text-gray-600 text-xs font-bold ml-1">เลือกบริการ</Label>
                                         <select
                                             required
-                                            className="w-full h-14 rounded-2xl bg-gray-50 border-none px-4 text-gray-900 focus:ring-2 focus:ring-[#bbfc2f] transition-all"
+                                            className="w-full h-11 rounded-xl bg-gray-50 border-none px-4 text-sm text-gray-900 focus:ring-2 focus:ring-[#2563eb] transition-all"
                                             value={form.serviceId}
                                             onChange={(e) => handleServiceChange(e.target.value)}
                                         >
-                                            <option value="">เลือกแพ็คเกจบริการ</option>
+                                            <option value="">เลือกแพ็คเกจ</option>
                                             {services.map(s => (
                                                 <option key={s._id} value={s._id}>{s.name}</option>
                                             ))}
                                         </select>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label className="text-gray-600 font-bold ml-1">ทะเบียนรถ</Label>
-                                            <Input
-                                                className="h-14 rounded-2xl bg-gray-50 border-none"
-                                                value={form.carPlate}
-                                                onChange={e => setForm({ ...form, carPlate: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-gray-600 font-bold ml-1">ขนาดรถ</Label>
-                                            <div className="flex gap-2">
-                                                {['S', 'M', 'L', 'XL'].map(size => (
-                                                    <button
-                                                        key={size}
-                                                        type="button"
-                                                        onClick={() => setForm({ ...form, carSize: size })}
-                                                        className={`flex-1 h-12 rounded-xl text-sm font-bold transition-all ${form.carSize === size ? 'bg-[#bbfc2f] text-black shadow-md scale-105' : 'bg-gray-100 text-gray-400'}`}
-                                                    >
-                                                        {size}
-                                                    </button>
-                                                ))}
+                                            <Label className="text-gray-600 text-xs font-bold ml-1">ข้อมูลรถยนต์</Label>
+                                            {form.customerId && customers.find(c => c._id === form.customerId)?.cars?.length > 0 ? (
+                                                <select
+                                                    className="w-full h-11 rounded-xl bg-blue-50 border-none px-4 text-sm text-blue-900 font-bold focus:ring-2 focus:ring-[#2563eb] transition-all mb-2"
+                                                    onChange={(e) => handleCarSelect(e.target.value)}
+                                                    value={form.carPlate}
+                                                >
+                                                    {customers.find(c => c._id === form.customerId).cars.map((car: any) => (
+                                                        <option key={car.plate} value={car.plate}>
+                                                            {car.plate} - {car.brand} {car.model} ({car.size})
+                                                        </option>
+                                                    ))}
+                                                    <option value="new">+ เพิ่มทะเบียนใหม่</option>
+                                                </select>
+                                            ) : null}
+                                            
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="relative group">
+                                                    <Car className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2563eb]" size={16} />
+                                                    <Input
+                                                        placeholder="ทะเบียนรถ"
+                                                        className="h-11 rounded-xl bg-gray-50 border-none text-sm pl-11"
+                                                        value={form.carPlate}
+                                                        onChange={e => setForm({ ...form, carPlate: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="flex gap-1.5">
+                                                    {['S', 'M', 'L', 'XL'].map(size => (
+                                                        <button
+                                                            key={size}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const srv = services.find(s => s._id === form.serviceId);
+                                                                const nextPrice = srv ? (srv.prices[size] || 0) : form.price;
+                                                                setForm({ ...form, carSize: size, price: nextPrice });
+                                                            }}
+                                                            className={`flex-1 h-11 rounded-xl text-xs font-black transition-all ${form.carSize === size ? 'bg-[#2563eb] text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                                        >
+                                                            {size}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <Input
+                                                    placeholder="ยี่ห้อ (เช่น Toyota)"
+                                                    className="h-11 rounded-xl bg-gray-50 border-none text-sm"
+                                                    value={form.carBrand}
+                                                    onChange={e => setForm({ ...form, carBrand: e.target.value })}
+                                                />
+                                                <Input
+                                                    placeholder="รุ่น (เช่น Camry)"
+                                                    className="h-11 rounded-xl bg-gray-50 border-none text-sm"
+                                                    value={form.carModel}
+                                                    onChange={e => setForm({ ...form, carModel: e.target.value })}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -245,19 +309,19 @@ export default function BookingsPage() {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-gray-600 font-bold ml-1">วันที่เข้ารับบริการ</Label>
+                                            <Label className="text-gray-600 text-xs font-bold ml-1">วันที่เข้ารับบริการ</Label>
                                             <Input
                                                 type="date"
-                                                className="h-14 rounded-2xl bg-gray-50 border-none"
+                                                className="h-11 rounded-xl bg-gray-50 border-none text-sm"
                                                 value={form.bookingDate}
                                                 onChange={e => setForm({ ...form, bookingDate: e.target.value })}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-gray-600 font-bold ml-1">กำหนดรับรถ (โดยประมาณ)</Label>
+                                            <Label className="text-gray-600 text-xs font-bold ml-1">กำหนดรับรถ</Label>
                                             <Input
                                                 type="datetime-local"
-                                                className="h-14 rounded-2xl bg-gray-50 border-none"
+                                                className="h-11 rounded-xl bg-gray-50 border-none text-sm"
                                                 value={form.pickupDate}
                                                 onChange={e => setForm({ ...form, pickupDate: e.target.value })}
                                             />
@@ -265,36 +329,49 @@ export default function BookingsPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-gray-600 font-bold ml-1">ราคาค่าบริการ (฿)</Label>
+                                        <Label className="text-gray-600 text-xs font-bold ml-1">หมายเหตุเพิ่มเติม</Label>
+                                        <textarea
+                                            className="w-full h-24 rounded-xl bg-gray-50 border-none p-4 text-sm text-gray-900 focus:ring-2 focus:ring-[#2563eb] transition-all no-scrollbar"
+                                            placeholder="ความต้องการพิเศษของลูกค้า หรือจุดที่ควรระวัง..."
+                                            value={form.notes}
+                                            onChange={e => setForm({ ...form, notes: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center ml-1">
+                                            <Label className="text-gray-600 text-xs font-bold">ราคาค่าบริการ (฿)</Label>
+                                            <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest">
+                                                + {Math.floor(form.price * 0.1)} Points Earned
+                                            </p>
+                                        </div>
                                         <Input
                                             type="number"
-                                            className="h-14 rounded-2xl bg-[#bbfc2f]/5 border-2 border-[#bbfc2f]/20 font-black text-xl"
+                                            className="h-12 rounded-xl bg-white border-2 border-[#2563eb]/20 font-black text-xl text-[#2563eb]"
                                             value={form.price}
                                             onChange={e => setForm({ ...form, price: Number(e.target.value) })}
                                         />
-                                        <p className="text-[10px] text-green-600 font-bold ml-1 uppercase tracking-widest">
-                                            + {Math.floor(form.price * 0.1)} Points จะถูกเพิ่มให้สมาชิก
-                                        </p>
                                     </div>
 
                                     <div className="space-y-2 pt-4">
                                         <Button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="w-full bg-[#bbfc2f] text-black hover:bg-[#a3e635] rounded-[1.5rem] h-16 font-black text-xl shadow-xl shadow-[#bbfc2f]/20 border-0"
+                                            className="w-full bg-[#2563eb] text-white hover:bg-blue-700 rounded-xl h-12 font-black text-lg shadow-xl shadow-[#2563eb]/10 border-0"
                                         >
                                             {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : 'ยืนยันการจองคิว'}
                                         </Button>
                                     </div>
                                 </div>
                             </form>
-                        </DialogContent>
+                        </div>
+                    </DialogContent>
                     </Dialog>
                 </header>
 
                 {/* Queue Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    <Card className="rounded-[2.5rem] border-0 shadow-sm p-6 bg-white overflow-hidden relative group">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card className="rounded-3xl border-0 shadow-sm p-5 bg-white overflow-hidden relative group">
                         <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-50 rounded-full group-hover:scale-110 transition-transform duration-500" />
                         <CardHeader className="p-0 mb-2">
                             <CardTitle className="text-sm font-bold text-gray-400 uppercase tracking-widest">คิวงานรอดำเนินการ</CardTitle>
@@ -306,7 +383,7 @@ export default function BookingsPage() {
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="rounded-[2.5rem] border-0 shadow-sm p-6 bg-white overflow-hidden relative group">
+                    <Card className="rounded-3xl border-0 shadow-sm p-5 bg-white overflow-hidden relative group">
                         <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-orange-50 rounded-full group-hover:scale-110 transition-transform duration-500" />
                         <CardHeader className="p-0 mb-2">
                             <CardTitle className="text-sm font-bold text-gray-400 uppercase tracking-widest">กำลังดำเนินการ</CardTitle>
@@ -318,15 +395,15 @@ export default function BookingsPage() {
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="rounded-[2.5rem] border-0 shadow-sm p-6 bg-white overflow-hidden relative group">
+                    <Card className="rounded-3xl border-0 shadow-sm p-5 bg-white overflow-hidden relative group">
                         <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-green-50 rounded-full group-hover:scale-110 transition-transform duration-500" />
                         <CardHeader className="p-0 mb-2">
                             <CardTitle className="text-sm font-bold text-gray-400 uppercase tracking-widest">เสร็จสิ้นวันนี้</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 flex items-center justify-between relative z-10">
-                            <span className="text-4xl font-black text-gray-900">{bookings.filter(b => b.status === 'เสร็จสิ้น').length}</span>
-                            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600">
-                                <CheckCircle2 size={24} />
+                            <span className="text-3xl font-black text-gray-900">{bookings.filter(b => b.status === 'เสร็จสิ้น').length}</span>
+                            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+                                <CheckCircle2 size={20} />
                             </div>
                         </CardContent>
                     </Card>
@@ -335,37 +412,42 @@ export default function BookingsPage() {
                 {/* Queue List */}
                 <div className="space-y-4 pb-20">
                     <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                        <ListFilter size={24} className="text-[#bbfc2f]" />
+                        <ListFilter size={24} className="text-[#2563eb]" />
                         คิวงานทั้งหมด
                     </h2>
 
                     {isLoading ? (
-                        <div className="py-20 text-center bg-white rounded-[2.5rem]">
-                            <Loader2 className="h-10 w-10 animate-spin text-[#bbfc2f] mx-auto" />
+                        <div className="py-20 text-center bg-white rounded-3xl">
+                            <Loader2 className="h-10 w-10 animate-spin text-[#2563eb] mx-auto" />
                         </div>
                     ) : bookings.length === 0 ? (
-                        <div className="py-20 text-center bg-white rounded-[2.5rem] border border-dashed text-gray-400 font-bold">
+                        <div className="py-20 text-center bg-white rounded-3xl border border-dashed text-gray-400 font-bold">
                             ยังไม่มีคิวงานในขณะนี้
                         </div>
                     ) : (
                         bookings.map((b) => (
-                            <Card key={b._id} className="rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all group bg-white">
-                                <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
-                                    <div className="shrink-0 w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-[#bbfc2f]/10 group-hover:text-black transition-colors">
-                                        <Car size={32} />
+                            <Card key={b._id} className="rounded-xl border-0 shadow-sm hover:shadow-md transition-all group bg-white">
+                                <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
+                                    <div className="shrink-0 w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 group-hover:bg-[#2563eb]/10 group-hover:text-black transition-colors">
+                                        <Car size={24} />
                                     </div>
 
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="font-bold text-lg text-gray-900">ทะเบียน {b.carPlate}</h3>
-                                            <Badge className="bg-gray-100 text-gray-500 border-0 h-5 text-[10px]">{b.carSize}</Badge>
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <h3 className="font-bold text-base text-gray-900">ทะเบียน {b.carPlate}</h3>
+                                            {customers.find(c => c._id === b.customerId?._id)?.cars?.find((car: any) => car.plate === b.carPlate) && (
+                                                <span className="text-[11px] font-bold text-gray-600 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
+                                                    {customers.find(c => c._id === b.customerId?._id).cars.find((car: any) => car.plate === b.carPlate).brand} {customers.find(c => c._id === b.customerId?._id).cars.find((car: any) => car.plate === b.carPlate).model}
+                                                </span>
+                                            )}
+                                            <Badge className="bg-blue-50 text-[#2563eb] border-0 h-4 text-[9px] px-1.5 font-black">{b.carSize}</Badge>
                                         </div>
-                                        <div className="flex items-center gap-6 text-sm">
+                                        <div className="flex items-center gap-4 text-xs">
                                             <div className="flex items-center text-gray-500 font-medium">
-                                                <User size={14} className="mr-1.5" /> {b.customerId?.firstName} {b.customerId?.lastName}
+                                                <User size={12} className="mr-1 text-[#2563eb]" /> {b.customerId?.firstName} {b.customerId?.lastName}
                                             </div>
-                                            <div className="flex items-center text-gray-400">
-                                                <Sparkles size={14} className="mr-1.5 text-yellow-500" /> {b.serviceId?.name}
+                                            <div className="flex items-center text-gray-400 font-medium">
+                                                <Sparkles size={12} className="mr-1 text-orange-400" /> {b.serviceId?.name}
                                             </div>
                                         </div>
                                     </div>

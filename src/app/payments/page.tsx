@@ -51,32 +51,32 @@ export default function PaymentsPage() {
         <div className="flex bg-[#f3f5f8] h-screen overflow-hidden font-sans w-full">
             <SidebarLeft />
 
-            <main className="flex-1 px-8 py-8 overflow-y-auto w-full no-scrollbar">
+            <main className="flex-1 px-6 py-6 overflow-y-auto w-full no-scrollbar">
                 {/* Header */}
-                <header className="flex justify-between items-center mb-10 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-[#bbfc2f] rounded-3xl flex items-center justify-center shadow-xl shadow-[#bbfc2f]/20 rotate-12 group hover:rotate-0 transition-transform cursor-pointer">
-                            <CreditCard size={32} className="text-black -rotate-12 group-hover:rotate-0 transition-transform" />
+                <header className="flex justify-between items-center mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 bg-[#2563eb] rounded-xl flex items-center justify-center shadow-lg shadow-[#2563eb]/20 group cursor-pointer">
+                            <CreditCard size={24} className="text-black transition-transform" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900 tracking-tight">การชำระเงิน (Payments)</h1>
-                            <p className="text-muted-foreground text-sm font-medium">บันทึกรายรับ ตรวจสอบสลิป และติดตามสถานะการจ่ายเงินของลูกค้า</p>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight">การชำระเงิน (Payments)</h1>
+                            <p className="text-muted-foreground text-xs font-medium">บันทึกรายรับ และติดตามสถานะการจ่ายเงินของลูกค้า</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Button variant="outline" className="rounded-2xl border-gray-100 h-14 px-6 font-bold shadow-sm">
-                            <Download size={18} className="mr-2" /> ส่งออกรายงาน
+                        <Button variant="outline" className="rounded-xl border-gray-100 h-11 px-5 font-bold shadow-sm text-xs">
+                            <Download size={16} className="mr-2" /> รายงาน
                         </Button>
                     </div>
                 </header>
 
                 {/* Filters & Stats */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
                     <div className="lg:col-span-2 relative group flex items-center">
-                        <Search className="absolute left-5 text-gray-400 group-focus-within:text-[#bbfc2f] transition-colors" size={20} />
+                        <Search className="absolute left-5 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={18} />
                         <Input
-                            placeholder="ค้นหาชื่อลูกค้า, ทะเบียนรถ หรือเลขอ้างอิง..."
-                            className="h-16 pl-14 pr-6 rounded-2xl bg-white border-none shadow-sm text-base focus-visible:ring-2 focus-visible:ring-[#bbfc2f]/30"
+                            placeholder="ค้นหาชื่อลูกค้า, ทะเบียนรถ..."
+                            className="h-12 pl-12 pr-6 rounded-xl bg-white border-none shadow-sm text-sm focus-visible:ring-2 focus-visible:ring-[#2563eb]/30"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -97,7 +97,7 @@ export default function PaymentsPage() {
 
                     <Card className="rounded-[1.5rem] border-0 shadow-sm bg-white p-5 flex items-center justify-between group hover:shadow-md transition-all">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-[#bbfc2f]/20 flex items-center justify-center text-green-600 transition-transform group-hover:scale-110">
+                            <div className="w-10 h-10 rounded-xl bg-[#2563eb]/20 flex items-center justify-center text-green-600 transition-transform group-hover:scale-110">
                                 <CheckCircle2 size={20} />
                             </div>
                             <div className="flex flex-col">
@@ -110,11 +110,11 @@ export default function PaymentsPage() {
                 </div>
 
                 {/* Payments Table */}
-                <Card className="rounded-[2.5rem] border-0 shadow-sm bg-white overflow-hidden pb-10">
+                <Card className="rounded-2xl border-0 shadow-sm bg-white overflow-hidden pb-10">
                     <Table>
                         <TableHeader>
-                            <TableRow className="hover:bg-transparent border-gray-50 h-14">
-                                <TableHead className="pl-8 text-xs font-bold text-gray-400 uppercase tracking-widest">วันที่ชำระ</TableHead>
+                            <TableRow className="hover:bg-transparent border-gray-50 h-12">
+                                <TableHead className="pl-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">วันที่ชำระ</TableHead>
                                 <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-widest">ลูกค้า</TableHead>
                                 <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-widest">ทะเบียน</TableHead>
                                 <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-widest">ช่องทาง</TableHead>
@@ -127,7 +127,7 @@ export default function PaymentsPage() {
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-[400px] text-center">
-                                        <Loader2 className="animate-spin text-[#bbfc2f] mx-auto h-8 w-8" />
+                                        <Loader2 className="animate-spin text-[#2563eb] mx-auto h-8 w-8" />
                                     </TableCell>
                                 </TableRow>
                             ) : filteredPayments.length === 0 ? (
@@ -139,7 +139,7 @@ export default function PaymentsPage() {
                             ) : (
                                 filteredPayments.map((p) => (
                                     <TableRow key={p._id} className="hover:bg-gray-50/50 transition-all border-gray-50 group cursor-pointer" onClick={() => setSelectedPayment(p)}>
-                                        <TableCell className="pl-8 py-5">
+                                        <TableCell className="pl-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-bold text-gray-900">
                                                     {new Date(p.paidAt).toLocaleDateString('th-TH')}
@@ -151,7 +151,7 @@ export default function PaymentsPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 text-gray-400 group-hover:bg-[#bbfc2f]/10 group-hover:text-black transition-colors">
+                                                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 text-gray-400 group-hover:bg-[#2563eb]/10 group-hover:text-black transition-colors">
                                                     <User size={18} />
                                                 </div>
                                                 <div className="flex flex-col">
@@ -195,42 +195,42 @@ export default function PaymentsPage() {
                     </Table>
                 </Card>
 
-                {/* Payment Detail Dialog */}
                 <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
-                    <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-0 overflow-hidden border-0 shadow-2xl">
-                        <DialogHeader className="bg-[#111311] p-10 text-white relative">
-                            <DialogTitle className="text-2xl font-black text-[#bbfc2f] tracking-tight">รายละเอียดใบเสร็จ</DialogTitle>
-                            <CreditCard className="absolute top-10 right-10 text-gray-700 opacity-50" size={48} />
+                    <DialogContent className="sm:max-w-[500px] rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+                        <DialogHeader className="bg-[#0a0b0a] p-6 text-white relative">
+                            <DialogTitle className="text-xl font-black text-[#2563eb] tracking-tight">รายละเอียดใบเสร็จ</DialogTitle>
+                            <CreditCard className="absolute top-6 right-6 text-gray-700 opacity-50" size={32} />
                         </DialogHeader>
+                        <div className="max-h-[70vh] overflow-y-auto no-scrollbar">
                         {selectedPayment && (
-                            <div className="p-10 bg-white space-y-8">
-                                <div className="grid grid-cols-2 gap-8">
+                            <div className="p-6 bg-white space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ชื่อลูกค้า</p>
-                                        <p className="font-black text-gray-900">{selectedPayment.customerId?.firstName} {selectedPayment.customerId?.lastName}</p>
+                                        <p className="font-black text-sm text-gray-900">{selectedPayment.customerId?.firstName} {selectedPayment.customerId?.lastName}</p>
                                     </div>
                                     <div className="space-y-1 text-right">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ทะเบียนรถ</p>
-                                        <p className="font-black text-gray-900">{selectedPayment.bookingId?.carPlate}</p>
+                                        <p className="font-black text-sm text-gray-900">{selectedPayment.bookingId?.carPlate}</p>
                                     </div>
                                 </div>
 
-                                <Card className="p-6 bg-gray-50 border-0 rounded-3xl flex items-center justify-between">
+                                <Card className="p-5 bg-gray-50 border-0 rounded-2xl flex items-center justify-between">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">ยอดชำระสุทธิ</span>
-                                        <span className="text-3xl font-black text-gray-900">฿{selectedPayment.amount?.toLocaleString()}</span>
+                                        <span className="text-2xl font-black text-gray-900">฿{selectedPayment.amount?.toLocaleString()}</span>
                                     </div>
-                                    <Badge className={`${selectedPayment.status === 'ชำระแล้ว' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'} border-0 px-4 py-2 rounded-xl font-bold`}>
+                                    <Badge className={`${selectedPayment.status === 'ชำระแล้ว' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'} border-0 px-3 py-1.5 rounded-xl font-bold text-xs`}>
                                         {selectedPayment.status}
                                     </Badge>
                                 </Card>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between text-sm">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between text-xs">
                                         <span className="text-gray-400 font-medium">จ่ายโดย</span>
                                         <span className="text-gray-900 font-bold">{selectedPayment.method}</span>
                                     </div>
-                                    <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center justify-between text-xs">
                                         <span className="text-gray-400 font-medium">วันที่ / เวลา</span>
                                         <span className="text-gray-900 font-bold">
                                             {new Date(selectedPayment.paidAt).toLocaleDateString('th-TH')} • {new Date(selectedPayment.paidAt).toLocaleTimeString('th-TH')}
@@ -238,16 +238,17 @@ export default function PaymentsPage() {
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex gap-4">
-                                    <Button className="flex-1 bg-gray-900 text-white hover:bg-black rounded-2xl h-14 font-black text-base shadow-xl transition-all">
+                                <div className="pt-4 flex gap-3">
+                                    <Button className="flex-1 bg-gray-900 text-white hover:bg-black rounded-xl h-12 font-black text-sm shadow-lg transition-all">
                                         พิมพ์ใบเสร็จ
                                     </Button>
-                                    <Button variant="outline" className="flex-1 border-gray-100 rounded-2xl h-14 font-black text-base" onClick={() => setSelectedPayment(null)}>
+                                    <Button variant="outline" className="flex-1 border-gray-100 rounded-xl h-12 font-black text-sm" onClick={() => setSelectedPayment(null)}>
                                         ปิดหน้าต่าง
                                     </Button>
                                 </div>
                             </div>
                         )}
+                        </div>
                     </DialogContent>
                 </Dialog>
             </main>

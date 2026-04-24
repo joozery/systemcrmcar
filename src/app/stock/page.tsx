@@ -152,7 +152,7 @@ export default function StockPage() {
                     <div className="flex items-center gap-4">
                         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                             <DialogTrigger asChild>
-                                <Button className="bg-[#bbfc2f] text-black hover:bg-[#a3e635] rounded-full px-5 py-2.5 h-auto shadow-sm transition-colors border-0">
+                                <Button className="bg-[#2563eb] text-white hover:bg-blue-700 rounded-full px-5 py-2.5 h-auto shadow-sm transition-colors border-0">
                                     <Plus size={16} className="mr-2" />
                                     <span className="text-sm font-semibold">เพิ่มสินค้าใหม่</span>
                                 </Button>
@@ -242,7 +242,7 @@ export default function StockPage() {
                                     </div>
                                     <DialogFooter className="mt-4">
                                         <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)} disabled={isSubmitting}>ยกเลิก</Button>
-                                        <Button type="submit" className="bg-[#bbfc2f] text-black hover:bg-[#a3e635]" disabled={isSubmitting}>
+                                        <Button type="submit" className="bg-[#2563eb] text-white hover:bg-blue-700" disabled={isSubmitting}>
                                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                             บันทึกข้อมูล
                                         </Button>
@@ -261,7 +261,7 @@ export default function StockPage() {
                 <div className="grid grid-cols-4 gap-6 mb-8">
                     {[
                         { title: "สินค้าทั้งหมด", value: stockItems.length, unit: "รายการ", color: "bg-blue-500" },
-                        { title: "มูลค่าสต็อกรวม", value: "฿124k", unit: "บาท", color: "bg-[#bbfc2f]" },
+                        { title: "มูลค่าสต็อกรวม", value: "฿124k", unit: "บาท", color: "bg-[#2563eb]" },
                         { title: "ใกล้หมดสต็อก", value: stockItems.filter(i => i.status === "ใกล้หมด").length, unit: "รายการ", color: "bg-orange-500" },
                         { title: "สินค้าที่หมด", value: stockItems.filter(i => i.status === "หมดสต็อก").length, unit: "รายการ", color: "bg-red-500" },
                     ].map((stat, i) => (
@@ -288,7 +288,7 @@ export default function StockPage() {
                                 <input
                                     type="text"
                                     placeholder="ค้นหาสินค้า..."
-                                    className="bg-gray-50 border-none rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#bbfc2f] focus:outline-none w-64 text-gray-800"
+                                    className="bg-gray-50 border-none rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#2563eb] focus:outline-none w-64 text-gray-800"
                                 />
                             </div>
                             <Button variant="outline" className="rounded-xl border border-gray-200 gap-2 text-gray-600">
@@ -377,7 +377,7 @@ export default function StockPage() {
                                             <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">แก้ไขข้อมูล</Button>
                                             <Button
                                                 variant="default"
-                                                className="bg-[#bbfc2f] text-black hover:bg-[#a3e635]"
+                                                className="bg-[#2563eb] text-white hover:bg-blue-700"
                                                 onClick={() => {
                                                     // Navigate to full details page
                                                     window.location.href = `/stock/${selectedProduct.id}`;
@@ -433,7 +433,7 @@ export default function StockPage() {
                                                             min="1"
                                                             value={movementForm.amount}
                                                             onChange={(e) => setMovementForm({ ...movementForm, amount: Number(e.target.value) })}
-                                                            className="h-12 text-lg font-bold pl-4 border-gray-200 focus:ring-0 focus:border-[#bbfc2f] rounded-xl"
+                                                            className="h-12 text-lg font-bold pl-4 border-gray-200 focus:ring-0 focus:border-[#2563eb] rounded-xl"
                                                         />
                                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
                                                             {selectedProductForMovement.unit}
@@ -488,7 +488,7 @@ export default function StockPage() {
                                         <tr>
                                             <td colSpan={8} className="py-20 text-center">
                                                 <div className="flex flex-col items-center justify-center gap-2">
-                                                    <Loader2 className="h-8 w-8 animate-spin text-[#bbfc2f]" />
+                                                    <Loader2 className="h-8 w-8 animate-spin text-[#2563eb]" />
                                                     <p className="text-sm text-gray-500">กำลังโหลดข้อมูลสต็อก...</p>
                                                 </div>
                                             </td>

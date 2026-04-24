@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
                 {/* Header */}
                 <header className="flex justify-between items-center mb-10 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-[#bbfc2f] rounded-3xl flex items-center justify-center shadow-xl shadow-[#bbfc2f]/20 rotate-12 group hover:rotate-0 transition-transform">
+                        <div className="w-16 h-16 bg-[#2563eb] rounded-3xl flex items-center justify-center shadow-xl shadow-[#2563eb]/20 rotate-12 group hover:rotate-0 transition-transform">
                             <UserCog size={32} className="text-black -rotate-12 group-hover:rotate-0 transition-transform" />
                         </div>
                         <div>
@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-0 overflow-hidden border-0 shadow-2xl">
                             <div className="bg-[#111311] px-10 py-8 text-white relative">
-                                <div className="text-2xl font-black text-[#bbfc2f] mb-2">เพิ่มผู้ใช้ใหม่</div>
+                                <div className="text-2xl font-black text-[#2563eb] mb-2">เพิ่มผู้ใช้ใหม่</div>
                                 <p className="text-sm text-gray-400 font-medium opacity-80">ระบุข้อมูลพื้นฐานและสิทธิ์การเข้าถึงของผู้ใช้</p>
                             </div>
                             <form onSubmit={handleAddUser} className="p-10 space-y-6 bg-white">
@@ -218,7 +218,7 @@ export default function AdminUsersPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <Button type="submit" className="w-full bg-[#bbfc2f] text-black hover:bg-[#a6e02a] rounded-2xl h-14 font-black shadow-xl shadow-[#bbfc2f]/20 mt-4">
+                                <Button type="submit" className="w-full bg-[#2563eb] text-white hover:bg-blue-700 rounded-2xl h-14 font-black shadow-xl shadow-[#2563eb]/20 mt-4">
                                     บันทึกข้อมูล
                                 </Button>
                             </form>
@@ -228,10 +228,10 @@ export default function AdminUsersPage() {
 
                 {/* Filters */}
                 <div className="mb-8 relative group flex items-center">
-                    <Search className="absolute left-6 text-gray-400 group-focus-within:text-[#bbfc2f] transition-colors" size={24} />
+                    <Search className="absolute left-6 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={24} />
                     <Input
                         placeholder="พิมพ์เพื่อค้นหาชื่อผู้ใช้ หรือชื่อพนักงาน..."
-                        className="h-20 pl-16 pr-8 rounded-3xl bg-white border-none shadow-sm text-lg font-medium focus-visible:ring-2 focus-visible:ring-[#bbfc2f]/30"
+                        className="h-20 pl-16 pr-8 rounded-3xl bg-white border-none shadow-sm text-lg font-medium focus-visible:ring-2 focus-visible:ring-[#2563eb]/30"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -254,7 +254,7 @@ export default function AdminUsersPage() {
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={6} className="h-64 text-center">
-                                        <Loader2 className="animate-spin text-[#bbfc2f] mx-auto h-12 w-12" />
+                                        <Loader2 className="animate-spin text-[#2563eb] mx-auto h-12 w-12" />
                                     </TableCell>
                                 </TableRow>
                             ) : filteredUsers.length === 0 ? (
@@ -287,7 +287,7 @@ export default function AdminUsersPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${u.status === 'active' ? 'bg-[#bbfc2f]' : 'bg-gray-300'}`} />
+                                                <div className={`w-2 h-2 rounded-full ${u.status === 'active' ? 'bg-[#2563eb]' : 'bg-gray-300'}`} />
                                                 <span className="text-xs font-bold text-gray-500">{u.status === 'active' ? 'กำลังทำงาน' : 'ระงับการเข้าถึง'}</span>
                                             </div>
                                         </TableCell>
@@ -301,7 +301,7 @@ export default function AdminUsersPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="rounded-xl hover:bg-[#bbfc2f]/10 hover:text-black transition-all"
+                                                    className="rounded-xl hover:bg-[#2563eb]/10 hover:text-black transition-all"
                                                     onClick={() => openEditModal(u)}
                                                 >
                                                     <Edit3 size={18} />
@@ -402,8 +402,8 @@ export default function AdminUsersPage() {
                 </Dialog>
 
                 {message && (
-                    <div className="fixed bottom-10 right-10 flex items-center gap-4 bg-white px-8 py-5 rounded-[2.5rem] shadow-2xl border-l-[10px] border-[#bbfc2f] animate-in slide-in-from-right duration-500 z-50">
-                        <CheckCircle2 className="text-[#bbfc2f]" size={32} />
+                    <div className="fixed bottom-10 right-10 flex items-center gap-4 bg-white px-8 py-5 rounded-[2.5rem] shadow-2xl border-l-[10px] border-[#2563eb] animate-in slide-in-from-right duration-500 z-50">
+                        <CheckCircle2 className="text-[#2563eb]" size={32} />
                         <div>
                             <p className="font-black text-gray-900 text-lg">ดำเนินการสำเร็จ</p>
                             <p className="text-sm text-gray-400 font-bold">{message}</p>

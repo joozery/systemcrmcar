@@ -40,7 +40,7 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="flex bg-[#f3f5f8] h-screen w-full items-center justify-center">
-        <Loader2 className="animate-spin text-[#bbfc2f]" size={48} />
+        <Loader2 className="animate-spin text-[#2563eb]" size={48} />
       </div>
     );
   }

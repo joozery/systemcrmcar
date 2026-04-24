@@ -185,12 +185,12 @@ export default function ServicesPage() {
         <div className="flex bg-[#f3f5f8] h-screen overflow-hidden font-sans w-full">
             <SidebarLeft />
 
-            <main className="flex-1 px-8 py-8 overflow-y-auto w-full no-scrollbar">
+            <main className="flex-1 px-6 py-6 overflow-y-auto w-full no-scrollbar">
                 {/* Header Section */}
-                <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <header className="flex justify-between items-center mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                            <Sparkles className="text-[#bbfc2f] fill-[#bbfc2f]/20" size={28} />
+                            <Sparkles className="text-[#2563eb] fill-[#2563eb]/20" size={28} />
                             จัดการบริการ (Service Management)
                         </h1>
                         <p className="text-muted-foreground text-sm">ตั้งค่ารายการบริการ ราคา และระยะเวลาในการทำงาน</p>
@@ -200,22 +200,23 @@ export default function ServicesPage() {
                         if (!open) resetForm();
                     }}>
                         <DialogTrigger asChild>
-                            <Button className="bg-[#bbfc2f] text-black hover:bg-[#a3e635] rounded-full px-6 py-3 h-auto shadow-sm border-0 font-bold transition-all hover:scale-105 active:scale-95">
+                            <Button className="bg-[#2563eb] text-white hover:bg-blue-700 rounded-full px-6 py-3 h-auto shadow-sm border-0 font-bold transition-all hover:scale-105 active:scale-95">
                                 <Plus size={20} className="mr-2" />
                                 เพิ่มบริการใหม่
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[700px] rounded-[2.5rem] p-0 overflow-hidden border-0 shadow-2xl">
-                            <DialogHeader className="bg-[#171717] p-8 text-white relative">
+                        <DialogContent className="sm:max-w-[700px] rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+                            <DialogHeader className="bg-[#0a0b0a] p-6 text-white relative">
                                 <DialogTitle className="text-2xl font-bold">
                                     {isEditMode ? 'แก้ไขรายการบริการ' : 'เพิ่มรายการบริการใหม่'}
                                 </DialogTitle>
-                                <p className="text-gray-400 text-sm mt-1">
+                                <p className="text-gray-400 text-xs mt-1">
                                     {isEditMode ? 'ปรับปรุงข้อมูลบริการและราคาตามขนาดรถ' : 'กรอกข้อมูลบริการและกำหนดราคาตามขนาดรถให้ครบถ้วน'}
                                 </p>
                             </DialogHeader>
 
-                            <form onSubmit={handleAddService} className="p-8">
+                            <div className="max-h-[70vh] overflow-y-auto p-6 no-scrollbar">
+                                <form onSubmit={handleAddService}>
                                 <div className="grid grid-cols-2 gap-8">
                                     {/* Left Column: Basic Info */}
                                     <div className="space-y-5">
@@ -232,7 +233,7 @@ export default function ServicesPage() {
                                         <div className="space-y-2">
                                             <Label className="text-gray-600 font-medium">หมวดหมู่</Label>
                                             <select
-                                                className="w-full h-12 rounded-xl border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#bbfc2f]"
+                                                className="w-full h-12 rounded-xl border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
                                                 value={newService.category}
                                                 onChange={(e) => setNewService({ ...newService, category: e.target.value })}
                                             >
@@ -247,7 +248,7 @@ export default function ServicesPage() {
                                         <div className="space-y-2">
                                             <Label className="text-gray-600 font-medium">รายละเอียดบริการ</Label>
                                             <textarea
-                                                className="w-full rounded-xl border border-gray-200 p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-[#bbfc2f]"
+                                                className="w-full rounded-xl border border-gray-200 p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
                                                 placeholder="คำอธิบายสั้นๆ เกี่ยวกับบริการนี้..."
                                                 value={newService.description}
                                                 onChange={(e) => setNewService({ ...newService, description: e.target.value })}
@@ -317,7 +318,7 @@ export default function ServicesPage() {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 p-4 bg-[#bbfc2f]/5 rounded-2xl border border-[#bbfc2f]/20">
+                                        <div className="space-y-3 p-4 bg-[#2563eb]/5 rounded-2xl border border-[#2563eb]/20">
                                             <div className="flex justify-between items-center mb-2">
                                                 <Label className="text-gray-700 font-bold flex items-center gap-2">
                                                     <Coins size={16} className="text-[#65a30d]" /> ใช้คะแนนแลกบริการ
@@ -326,7 +327,7 @@ export default function ServicesPage() {
                                                     <input
                                                         type="checkbox"
                                                         id="redeemable"
-                                                        className="w-4 h-4 rounded text-[#bbfc2f] accent-[#bbfc2f]"
+                                                        className="w-4 h-4 rounded text-[#2563eb] accent-[#2563eb]"
                                                         checked={newService.redeemable}
                                                         onChange={(e) => setNewService({ ...newService, redeemable: e.target.checked })}
                                                     />
@@ -415,36 +416,37 @@ export default function ServicesPage() {
 
                                 <DialogFooter className="mt-10 gap-3">
                                     <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)} className="rounded-xl h-12 px-6" disabled={isSubmitting}>ยกเลิก</Button>
-                                    <Button type="submit" className="bg-[#bbfc2f] text-black hover:bg-[#a3e635] rounded-xl h-12 px-8 font-bold border-0" disabled={isSubmitting}>
+                                    <Button type="submit" className="bg-[#2563eb] text-white hover:bg-blue-700 rounded-xl h-12 px-8 font-bold border-0" disabled={isSubmitting}>
                                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         {isEditMode ? 'บันทึกการแก้ไข' : 'บันทึกรายการบริการ'}
                                     </Button>
                                 </DialogFooter>
-                            </form>
+                                </form>
+                            </div>
                         </DialogContent>
                     </Dialog>
                 </header>
 
                 {/* Filters & Stats Row */}
-                <div className="flex flex-col lg:flex-row gap-4 mb-10 items-stretch lg:items-center">
+                <div className="flex flex-col lg:flex-row gap-4 mb-8 items-stretch lg:items-center">
                     <div className="relative flex-1 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#bbfc2f] transition-colors" size={20} />
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={18} />
                         <Input
-                            placeholder="ค้นหาชื่อบริการ หรือหมวดหมู่..."
-                            className="w-full bg-white border-0 shadow-sm h-16 pl-14 pr-6 rounded-2xl focus-visible:ring-2 focus-visible:ring-[#bbfc2f]/50 transition-all text-base"
+                            placeholder="ค้นหาชื่อบริการ..."
+                            className="w-full bg-white border-0 shadow-sm h-12 pl-12 pr-6 rounded-xl focus-visible:ring-2 focus-visible:ring-[#2563eb]/50 transition-all text-sm"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" className="bg-white border-0 shadow-sm h-16 px-6 rounded-2xl hover:bg-gray-50 text-gray-700 font-semibold transition-all">
-                            <Filter size={20} className="mr-2" />
+                        <Button variant="outline" className="bg-white border-0 shadow-sm h-12 px-5 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold transition-all text-sm">
+                            <Filter size={18} className="mr-2" />
                             ตัวกรอง
                         </Button>
 
-                        <div className="bg-white shadow-sm rounded-2xl px-6 h-16 flex items-center gap-4 border-0 transition-all min-w-[180px]">
-                            <div className="w-10 h-10 rounded-full bg-[#bbfc2f]/10 flex items-center justify-center shrink-0">
+                        <div className="bg-white shadow-sm rounded-xl px-5 h-12 flex items-center gap-3 border-0 transition-all min-w-[150px]">
+                            <div className="w-10 h-10 rounded-full bg-[#2563eb]/10 flex items-center justify-center shrink-0">
                                 <Sparkles size={18} className="text-[#65a30d]" />
                             </div>
                             <div className="flex flex-col justify-center">
@@ -461,28 +463,28 @@ export default function ServicesPage() {
                 {/* Services List */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-20">
                     {isLoading ? (
-                        <div className="col-span-full py-20 text-center bg-white rounded-[2.5rem] shadow-sm">
-                            <Loader2 className="h-10 w-10 animate-spin text-[#bbfc2f] mx-auto mb-4" />
-                            <p className="text-gray-500">กำลังโหลดรายการบริการ...</p>
+                        <div className="col-span-full py-20 text-center bg-white rounded-2xl shadow-sm">
+                            <Loader2 className="h-10 w-10 animate-spin text-[#2563eb] mx-auto mb-4" />
+                            <p className="text-gray-500 text-sm">กำลังโหลดรายการบริการ...</p>
                         </div>
                     ) : filteredServices.length === 0 ? (
-                        <div className="col-span-full py-20 text-center bg-white rounded-[2.5rem] shadow-sm border border-dashed border-gray-200">
-                            <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Search size={32} className="text-gray-300" />
+                        <div className="col-span-full py-20 text-center bg-white rounded-2xl shadow-sm border border-dashed border-gray-200">
+                            <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Search size={24} className="text-gray-300" />
                             </div>
                             <h3 className="text-lg font-bold text-gray-900">ไม่พบบริการที่ค้นหา</h3>
-                            <p className="text-gray-500 mt-1">ลองเปลี่ยนคำค้นหา หรือเพิ่มรายการบริการใหม่</p>
+                            <p className="text-gray-400 text-sm mt-1">ลองเปลี่ยนคำค้นหา หรือเพิ่มรายการบริการใหม่</p>
                             <Button
                                 onClick={() => setIsAddModalOpen(true)}
                                 variant="outline"
-                                className="mt-6 border-gray-200 rounded-xl"
+                                className="mt-6 border-gray-200 rounded-xl h-10 px-5 text-xs font-bold"
                             >
-                                <Plus size={18} className="mr-2" /> เพิ่มบริการใหม่
+                                <Plus size={16} className="mr-2" /> เพิ่มบริการใหม่
                             </Button>
                         </div>
                     ) : (
                         filteredServices.map((srv) => (
-                            <Card key={srv.id} className="group rounded-[2.5rem] border-0 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden bg-white">
+                            <Card key={srv.id} className="group rounded-2xl border-0 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden bg-white">
                                 <CardContent className="p-0 flex h-full min-h-[220px]">
                                     {/* Service Image */}
                                     <div className="w-[200px] h-auto bg-gray-100 relative shrink-0 overflow-hidden">
@@ -493,7 +495,7 @@ export default function ServicesPage() {
                                                 <ImageIcon size={48} />
                                             </div>
                                         )}
-                                        <Badge className={`absolute top-4 left-4 border-0 shadow-lg ${srv.status === 'เปิดให้บริการ' ? 'bg-[#bbfc2f] text-black' : 'bg-red-500 text-white'}`}>
+                                        <Badge className={`absolute top-4 left-4 border-0 shadow-lg ${srv.status === 'เปิดให้บริการ' ? 'bg-[#2563eb] text-white' : 'bg-red-500 text-white'}`}>
                                             {srv.status === 'เปิดให้บริการ' ? <CheckCircle2 size={12} className="mr-1" /> : <AlertCircle size={12} className="mr-1" />}
                                             {srv.status}
                                         </Badge>

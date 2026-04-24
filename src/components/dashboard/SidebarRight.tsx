@@ -28,8 +28,8 @@ export function SidebarRight({ data, user }: { data?: any, user?: any }) {
     return (
         <aside className="w-[340px] bg-white border-l p-6 h-screen sticky top-0 overflow-y-auto hidden xl:block z-10 custom-shadow no-scrollbar">
             <div className="flex items-center gap-4 mb-8">
-                <Avatar className="w-12 h-12 border-2 border-[#bbfc2f]/20 shadow-sm">
-                    <AvatarImage src={`https://ui-avatars.com/api/?name=${user?.username || 'Admin'}&background=bbfc2f&color=000`} />
+                <Avatar className="w-12 h-12 border-2 border-[#2563eb]/20 shadow-sm">
+                    <AvatarImage src={`https://ui-avatars.com/api/?name=${user?.username || 'Admin'}&background=2563eb&color=fff`} />
                     <AvatarFallback>{user?.username?.[0]?.toUpperCase() || 'A'}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -73,8 +73,8 @@ export function SidebarRight({ data, user }: { data?: any, user?: any }) {
                                 row: "flex w-full mt-2",
                                 cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-transparent focus-within:relative focus-within:z-20 w-9 h-9",
                                 day: "h-8 w-8 p-0 font-bold aria-selected:opacity-100 mx-auto flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm transition-all text-xs",
-                                day_selected: "bg-[#bbfc2f] text-black hover:bg-[#bbfc2f] hover:text-black focus:bg-[#bbfc2f] focus:text-black font-black scale-110 shadow-lg shadow-[#bbfc2f]/30",
-                                day_today: "bg-gray-200 text-gray-900 after:content-[''] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-black after:rounded-full",
+                                day_selected: "bg-[#2563eb] text-white hover:bg-[#2563eb] hover:text-white focus:bg-[#2563eb] focus:text-white font-black scale-110 shadow-lg shadow-[#2563eb]/30",
+                                day_today: "bg-gray-100 text-gray-900 after:content-[''] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-black after:rounded-full",
                             }}
                         />
                     ) : (
@@ -92,7 +92,7 @@ export function SidebarRight({ data, user }: { data?: any, user?: any }) {
                     <span className="text-xs font-black text-gray-900">{completionRate}%</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground mb-3 font-medium">ภาพรวมชั่วโมงการทำงานสำเร็จวันนี้</p>
-                <Progress value={completionRate} className="h-2.5 bg-gray-100 rounded-full" indicatorClassName="bg-[#bbfc2f] shadow-[0_0_10px_rgba(187,252,47,0.5)]" />
+                <Progress value={completionRate} className="h-2.5 bg-gray-100 rounded-full" indicatorClassName="bg-[#2563eb] shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
             </div>
 
             <div>

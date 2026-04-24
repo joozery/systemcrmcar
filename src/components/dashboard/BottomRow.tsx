@@ -13,7 +13,7 @@ export function BottomRow({ bookings, extraStats }: { bookings?: any[], extraSta
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${extraStats?.lowStock > 0 ? 'bg-red-50 text-red-500' : 'bg-green-50 text-[#bbfc2f]'}`}>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${extraStats?.lowStock > 0 ? 'bg-red-50 text-red-500' : 'bg-green-50 text-[#2563eb]'}`}>
                             <AlertTriangle size={24} />
                         </div>
                         <div>
@@ -69,7 +69,7 @@ export function BottomRow({ bookings, extraStats }: { bookings?: any[], extraSta
                     {bookings && bookings.length > 0 ? bookings.slice(0, 2).map((b) => (
                         <div key={b._id} className="flex gap-4 items-center bg-gray-50 rounded-2xl p-2.5">
                             <div className="w-14 h-14 bg-black rounded-xl relative overflow-hidden flex items-center justify-center shadow-inner shrink-0">
-                                {b.serviceId?.name?.includes('ล้าง') ? <Droplets className="text-[#bbfc2f]" size={24} /> : <Star className="text-[#bbfc2f]" size={24} />}
+                                {b.serviceId?.name?.includes('ล้าง') ? <Droplets className="text-[#2563eb]" size={24} /> : <Star className="text-[#2563eb]" size={24} />}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h4 className="text-sm font-semibold text-gray-900 leading-tight mb-1 truncate">{b.carPlate} - {b.serviceId?.name}</h4>

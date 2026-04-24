@@ -59,7 +59,7 @@ export default function RegisterMemberPage() {
             <div className="min-h-screen bg-[#f3f5f8] flex items-center justify-center p-4 font-sans">
                 <Card className="w-full max-w-md border-0 shadow-2xl rounded-[2.5rem] overflow-hidden">
                     <CardContent className="p-12 text-center flex flex-col items-center">
-                        <div className="w-24 h-24 bg-[#bbfc2f] rounded-full flex items-center justify-center mb-6 animate-bounce">
+                        <div className="w-24 h-24 bg-[#2563eb] rounded-full flex items-center justify-center mb-6 animate-bounce">
                             <CheckCircle size={48} className="text-black" />
                         </div>
                         <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">ลงทะเบียนสำเร็จ!</h1>
@@ -79,10 +79,10 @@ export default function RegisterMemberPage() {
         <div className="min-h-screen bg-[#f3f5f8] flex items-center justify-center p-4 font-sans">
             <Card className="w-full max-w-md border-0 shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
                 <CardHeader className="bg-[#111311] text-white p-10 pb-12 rounded-b-[3rem] relative">
-                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#bbfc2f] rounded-2xl flex items-center justify-center shadow-xl rotate-12">
+                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#2563eb] rounded-2xl flex items-center justify-center shadow-xl rotate-12">
                         <User size={32} className="text-black -rotate-12" />
                     </div>
-                    <CardTitle className="text-3xl font-black tracking-tight mb-2 text-center text-[#bbfc2f]">
+                    <CardTitle className="text-3xl font-black tracking-tight mb-2 text-center text-[#2563eb]">
                         สมัครสมาชิก
                     </CardTitle>
                     <CardDescription className="text-gray-400 text-center font-medium">
@@ -100,14 +100,14 @@ export default function RegisterMemberPage() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
                             <Label className="text-gray-600 font-bold ml-1 flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#bbfc2f]" /> ชื่อจริง
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#2563eb]" /> ชื่อจริง
                             </Label>
                             <div className="relative group">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#bbfc2f] transition-colors" size={18} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={18} />
                                 <Input
                                     required
                                     placeholder="ชื่อจริงของคุณ"
-                                    className="rounded-2xl border-gray-100 h-14 pl-12 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#bbfc2f]/30 transition-all border-none shadow-sm"
+                                    className="rounded-2xl border-gray-100 h-14 pl-12 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#2563eb]/30 transition-all border-none shadow-sm"
                                     value={formData.firstName}
                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                 />
@@ -116,14 +116,14 @@ export default function RegisterMemberPage() {
 
                         <div className="space-y-2">
                             <Label className="text-gray-600 font-bold ml-1 flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#bbfc2f]" /> นามสกุล
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#2563eb]" /> นามสกุล
                             </Label>
                             <div className="relative group">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#bbfc2f] transition-colors" size={18} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={18} />
                                 <Input
                                     required
                                     placeholder="นามสกุลของคุณ"
-                                    className="rounded-2xl border-gray-100 h-14 pl-12 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#bbfc2f]/30 transition-all border-none shadow-sm"
+                                    className="rounded-2xl border-gray-100 h-14 pl-12 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#2563eb]/30 transition-all border-none shadow-sm"
                                     value={formData.lastName}
                                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                 />
@@ -132,15 +132,15 @@ export default function RegisterMemberPage() {
 
                         <div className="space-y-2">
                             <Label className="text-gray-600 font-bold ml-1 flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#bbfc2f]" /> เบอร์โทรศัพท์
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#2563eb]" /> เบอร์โทรศัพท์
                             </Label>
                             <div className="relative group">
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#bbfc2f] transition-colors" size={18} />
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={18} />
                                 <Input
                                     required
                                     type="tel"
                                     placeholder="08X-XXXXXXX"
-                                    className="rounded-2xl border-gray-100 h-14 pl-12 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#bbfc2f]/30 transition-all border-none shadow-sm font-mono tracking-widest"
+                                    className="rounded-2xl border-gray-100 h-14 pl-12 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#2563eb]/30 transition-all border-none shadow-sm font-mono tracking-widest"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 />
@@ -150,7 +150,7 @@ export default function RegisterMemberPage() {
                         <Button
                             type="submit"
                             disabled={isSubmitting || !userId}
-                            className="w-full bg-[#bbfc2f] text-black hover:bg-[#a3e635] rounded-2xl h-16 font-black text-xl shadow-lg shadow-[#bbfc2f]/20 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 mt-4 border-none"
+                            className="w-full bg-[#2563eb] text-white hover:bg-blue-700 rounded-2xl h-16 font-black text-xl shadow-lg shadow-[#2563eb]/20 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 mt-4 border-none"
                         >
                             {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : 'ยืนยันการสมัคร'}
                         </Button>

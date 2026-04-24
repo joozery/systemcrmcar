@@ -62,7 +62,7 @@ export default function SettingsPage() {
                 {/* Header */}
                 <header className="flex justify-between items-center mb-10 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-[#bbfc2f] rounded-3xl flex items-center justify-center shadow-xl shadow-[#bbfc2f]/20">
+                        <div className="w-16 h-16 bg-[#2563eb] rounded-3xl flex items-center justify-center shadow-xl shadow-[#2563eb]/20">
                             <SettingsIcon size={32} className="text-black" />
                         </div>
                         <div>
@@ -75,7 +75,7 @@ export default function SettingsPage() {
                 <div className="max-w-3xl space-y-8 pb-20">
                     <Card className="rounded-[2.5rem] border-0 shadow-sm bg-white overflow-hidden p-8">
                         <CardHeader className="p-0 mb-8 border-b border-gray-50 pb-6 flex flex-row items-center gap-4">
-                            <div className="w-12 h-12 bg-[#bbfc2f]/10 rounded-2xl flex items-center justify-center text-[#bbfc2f]">
+                            <div className="w-12 h-12 bg-[#2563eb]/10 rounded-2xl flex items-center justify-center text-[#2563eb]">
                                 <Coins size={24} />
                             </div>
                             <div>
@@ -98,13 +98,13 @@ export default function SettingsPage() {
                                         <div className="relative">
                                             <Input
                                                 type="number"
-                                                className="w-full md:w-32 h-14 rounded-2xl bg-gray-50 border-none font-bold text-xl px-4 text-center group-focus-within:bg-[#bbfc2f]/5"
+                                                className="w-full md:w-32 h-14 rounded-2xl bg-gray-50 border-none font-bold text-xl px-4 text-center group-focus-within:bg-[#2563eb]/5"
                                                 defaultValue={s.value}
                                                 step={s.key === 'point_earn_rate' ? 0.01 : 1}
                                                 onBlur={(e) => handleUpdate(s.key, e.target.value)}
                                             />
                                             {s.key === 'point_earn_rate' && (
-                                                <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-[#bbfc2f] bg-black px-2 py-0.5 rounded-full">
+                                                <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-[#2563eb] bg-black px-2 py-0.5 rounded-full">
                                                     {(s.value * 100).toFixed(0)}%
                                                 </span>
                                             )}
@@ -120,7 +120,7 @@ export default function SettingsPage() {
                             <Zap size={120} />
                         </div>
                         <div className="relative z-10 space-y-4">
-                            <h3 className="text-xl font-black text-[#bbfc2f]">💡 เคล็ดลับการตั้งค่า</h3>
+                            <h3 className="text-xl font-black text-[#2563eb]">💡 เคล็ดลับการตั้งค่า</h3>
                             <div className="space-y-3">
                                 <p className="text-sm text-gray-400 font-medium">1. **Point Earn Rate**: หากตั้งเป็น 0.1 หมายถึง จ่าย 100 บาท จะได้ 10 แต้ม (10%)</p>
                                 <p className="text-sm text-gray-400 font-medium">2. **การแลกแต้ม**: คุณสามารถเข้าไปกำหนด "คะแนนที่ต้องใช้" ได้ในหน้าจัดการบริการของแต่ละตัว</p>
@@ -130,8 +130,8 @@ export default function SettingsPage() {
                     </Card>
 
                     {message && (
-                        <div className="fixed bottom-10 right-10 flex items-center gap-3 bg-white px-8 py-5 rounded-[2rem] shadow-2xl border-l-8 border-[#bbfc2f] animate-in slide-in-from-right duration-500">
-                            <CheckCircle className="text-[#bbfc2f]" size={24} />
+                        <div className="fixed bottom-10 right-10 flex items-center gap-3 bg-white px-8 py-5 rounded-[2rem] shadow-2xl border-l-8 border-[#2563eb] animate-in slide-in-from-right duration-500">
+                            <CheckCircle className="text-[#2563eb]" size={24} />
                             <span className="font-black text-gray-900">{message}</span>
                         </div>
                     )}

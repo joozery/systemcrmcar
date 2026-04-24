@@ -5,10 +5,15 @@ import Member from '@/models/Member';
 import Service from '@/models/Service';
 import { sendLinePushMessage } from '@/lib/line';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         await connectDB();
-        const bookings = await Booking.find({})
+        const { searchParams } = new URL(req.url);
+        const customerId = searchParams.get('customerId');
+        
+        const query = customerId ? { customerId } : {};
+        
+        const bookings = await Booking.find(query)
             .populate('customerId', 'firstName lastName phone')
             .populate('serviceId', 'name')
             .sort({ bookingDate: -1 });
@@ -22,7 +27,7 @@ export async function POST(req: NextRequest) {
     try {
         await connectDB();
         const body = await req.json();
-        const { customerId, serviceId, bookingDate, pickupDate, price, carPlate, carSize, notes, usePoints } = body;
+        const { customerId, serviceId, bookingDate, pickupDate, price, carPlate, carSize, carBrand, carModel, notes, usePoints } = body;
 
         // Fetch point settings
         const settings = await require('@/models/Setting').default.find({});
@@ -59,19 +64,34 @@ export async function POST(req: NextRequest) {
             status: 'รอดำเนินการ'
         });
 
-        // Update member points and history
-        await Member.findByIdAndUpdate(customerId, {
-            $inc: { points: pointsEarned - pointsDeducted },
-            $set: { lastServiceDate: new Date() },
-            $push: {
-                history: {
-                    bookingId: booking._id,
-                    date: new Date(),
-                    points: usePoints ? -pointsDeducted : pointsEarned,
-                    type: usePoints ? 'REDEEM' : 'EARN'
+        // Update member points, history AND auto-register car if not exists
+        if (member) {
+            const carExists = member.cars && member.cars.some((c: any) => c.plate === carPlate);
+            const updateData: any = {
+                $inc: { points: pointsEarned - pointsDeducted },
+                $set: { lastServiceDate: new Date() },
+                $push: {
+                    history: {
+                        bookingId: booking._id,
+                        date: new Date(),
+                        points: usePoints ? -pointsDeducted : pointsEarned,
+                        type: usePoints ? 'REDEEM' : 'EARN'
+                    }
                 }
+            };
+
+            if (!carExists && carPlate) {
+                updateData.$push.cars = {
+                    plate: carPlate,
+                    brand: carBrand || '-',
+                    model: carModel || '-',
+                    size: carSize,
+                    color: '-'
+                };
             }
-        });
+
+            await Member.findByIdAndUpdate(customerId, updateData);
+        }
 
         // Send LINE Push Notification
         if (member.lineUserId) {

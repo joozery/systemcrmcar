@@ -77,7 +77,7 @@ export async function PUT(
                             type: 'box',
                             layout: 'vertical',
                             contents: [{ type: 'text', text: 'รถพร้อมรับแล้ว! ✨', weight: 'bold', size: 'xl', color: '#000000' }],
-                            backgroundColor: '#bbfc2f' // Brand Green
+                            backgroundColor: '#2563eb' // Brand Green
                         },
                         body: {
                             type: 'box',
