@@ -8,6 +8,17 @@ export async function POST(req: NextRequest) {
         const events = body.events || [];
 
         for (const event of events) {
+            if (event.source.type === 'group') {
+                console.log('--- LINE GROUP ID FOUND ---');
+                console.log('Group ID:', event.source.groupId);
+                console.log('Message:', event.message?.text);
+                console.log('---------------------------');
+            } else if (event.source.type === 'user') {
+                console.log('--- LINE USER ID FOUND ---');
+                console.log('User ID:', event.source.userId);
+                console.log('---------------------------');
+            }
+
             if (event.type === 'follow') {
                 const userId = event.source.userId;
                 const replyToken = event.replyToken;

@@ -51,7 +51,7 @@ export default function Dashboard() {
       <main className="flex-1 px-8 py-8 overflow-y-auto w-full no-scrollbar">
         <Header />
         <StatsRow data={data?.categoryStats} />
-        <MainChartRow chartData={data?.monthlyRevenue} />
+        <MainChartRow chartData={data?.monthlyBookings} extraStats={data?.extraStats} />
         <BottomRow bookings={data?.recentBookings} extraStats={data?.extraStats} />
       </main>
       <SidebarRight data={data} user={user} />

@@ -12,6 +12,13 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith('/api/webhook') ||
         pathname.startsWith('/api/members/register') ||
         pathname.startsWith('/register-member') ||
+        pathname.startsWith('/member-profile') ||
+        pathname.startsWith('/booking') ||
+        pathname.startsWith('/api/customers') ||
+        pathname.startsWith('/api/otp') ||
+        pathname.startsWith('/api/bookings') ||
+        pathname.startsWith('/api/services') ||
+        pathname.startsWith('/api/settings') ||
         pathname.includes('.') // for images, icons, etc.
     ) {
         // If user is already logged in and tries to go to /login, redirect to /

@@ -8,7 +8,14 @@ export async function GET() {
         await connectDB();
         const payments = await Payment.find({})
             .populate('customerId', 'firstName lastName phone')
-            .populate('bookingId', 'carPlate bookingDate status')
+            .populate({
+                path: 'bookingId',
+                select: 'carPlate bookingDate status serviceId',
+                populate: {
+                    path: 'serviceId',
+                    select: 'name'
+                }
+            })
             .sort({ createdAt: -1 });
         return NextResponse.json(payments);
     } catch (error: any) {

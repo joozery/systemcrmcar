@@ -53,11 +53,13 @@ export function SidebarLeft() {
 
     return (
         <aside className="group w-20 hover:w-56 bg-[#0a0b0a] text-white flex flex-col py-6 rounded-r-2xl h-screen sticky top-0 custom-shadow z-20 transition-all duration-300 ease-in-out overflow-hidden border-r border-white/5">
-            <div className="mb-10 flex justify-center">
+            <div className="mb-10 flex justify-center px-4 overflow-hidden">
                 {/* Logo */}
-                <div className="w-9 h-9 border-2 border-[#2563eb] shrink-0 rounded flex items-center justify-center transform rotate-45 shadow-lg shadow-[#2563eb]/20">
-                    <div className="transform -rotate-45 font-bold text-[#2563eb] text-base">CP</div>
-                </div>
+                <img 
+                    src="/logo/logoprosteam.png" 
+                    alt="Pro Steam Logo" 
+                    className="h-10 object-contain brightness-0 invert group-hover:h-12 transition-all duration-300"
+                />
             </div>
             <nav className="flex flex-col gap-2 flex-1 w-full px-3">
                 {navItems.map(renderItem)}

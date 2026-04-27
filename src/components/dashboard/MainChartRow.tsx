@@ -5,15 +5,13 @@ import { Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-export function MainChartRow({ chartData }: { chartData?: any[] }) {
+export function MainChartRow({ chartData, extraStats }: { chartData?: any[], extraStats?: any }) {
     const data = chartData && chartData.length > 0 ? chartData : [
-        { name: "Sun", offline: 0 },
-        { name: "Mon", offline: 0 },
-        { name: "Tue", offline: 0 },
-        { name: "Wed", offline: 0 },
-        { name: "Thu", offline: 0 },
-        { name: "Fri", offline: 0 },
-        { name: "Sat", offline: 0 },
+        { name: "ม.ค.", online: 0, offline: 0 },
+        { name: "ก.พ.", online: 0, offline: 0 },
+        { name: "มี.ค.", online: 0, offline: 0 },
+        { name: "เม.ย.", online: 0, offline: 0 },
+        { name: "พ.ค.", online: 0, offline: 0 },
     ];
     return (
         <div className="grid grid-cols-3 gap-6 mb-6">
@@ -54,19 +52,19 @@ export function MainChartRow({ chartData }: { chartData?: any[] }) {
                 <CardContent className="space-y-6">
                     <div className="w-full relative z-10 space-y-5">
                         <div className="w-[60%]">
-                            <p className="font-bold text-gray-900 leading-tight">56 คัน</p>
-                            <p className="text-[10px] text-muted-foreground mb-1.5">คาดการณ์สัปดาห์นี้</p>
-                            <Progress value={65} className="h-1.5 bg-gray-100 w-3/4" indicatorClassName="bg-gray-300" />
+                            <p className="font-bold text-gray-900 leading-tight">{extraStats?.todayCount || 0} คัน</p>
+                            <p className="text-[10px] text-muted-foreground mb-1.5">จำนวนรถเข้ารับบริการวันนี้</p>
+                            <Progress value={Math.min(((extraStats?.todayCount || 0) / 10) * 100, 100)} className="h-1.5 bg-gray-100 w-3/4" indicatorClassName="bg-gray-300" />
                         </div>
                         <div className="w-[60%]">
-                            <p className="font-bold text-gray-900 leading-tight">236 คัน</p>
-                            <p className="text-[10px] text-muted-foreground mb-1.5">จำนวนรถที่ให้บริการแล้ว</p>
-                            <Progress value={85} className="h-1.5 bg-gray-100" indicatorClassName="bg-gray-300" />
+                            <p className="font-bold text-gray-900 leading-tight">{extraStats?.totalYearToDate || 0} คัน</p>
+                            <p className="text-[10px] text-muted-foreground mb-1.5">จำนวนรถที่ให้บริการแล้วปีนี้</p>
+                            <Progress value={Math.min(((extraStats?.totalYearToDate || 0) / 1000) * 100, 100)} className="h-1.5 bg-gray-100" indicatorClassName="bg-gray-300" />
                         </div>
                         <div className="w-[60%]">
-                            <p className="font-bold text-gray-900 leading-tight">10 ชม.</p>
-                            <p className="text-[10px] text-muted-foreground mb-1.5">เวลาเฉลี่ย/คัน</p>
-                            <Progress value={45} className="h-1.5 bg-gray-100 w-1/2" indicatorClassName="bg-[#2563eb]" />
+                            <p className="font-bold text-gray-900 leading-tight">{extraStats?.completionRate || 0}%</p>
+                            <p className="text-[10px] text-muted-foreground mb-1.5">ประสิทธิภาพทีมงานวันนี้</p>
+                            <Progress value={extraStats?.completionRate || 0} className="h-1.5 bg-gray-100 w-1/2" indicatorClassName="bg-[#2563eb]" />
                         </div>
                     </div>
 

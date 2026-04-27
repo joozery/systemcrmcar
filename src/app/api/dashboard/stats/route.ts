@@ -30,8 +30,22 @@ export async function GET() {
             .filter(p => p.status === 'ค้างชำระ')
             .reduce((acc, p) => acc + (p.amount || 0), 0);
 
-        // Count active bookings (not 'เสร็จสิ้น')
-        const activeBookings = await Booking.countDocuments({ status: { $ne: 'เสร็จสิ้น' } });
+        // Count active bookings (not 'เสร็จสิ้น', 'ยกเลิก')
+        const activeBookings = await Booking.countDocuments({ status: { $nin: ['เสร็จสิ้น', 'ยกเลิก'] } });
+
+        // Total Vehicles count
+        const membersWithCars = await Member.aggregate([
+            { $unwind: "$cars" },
+            { $count: "totalCars" }
+        ]);
+        const totalCars = membersWithCars[0]?.totalCars || 0;
+
+        // Queue Statuses
+        const queueStats = {
+            waiting: await Booking.countDocuments({ status: { $in: ['รอดำเนินการ', 'ยืนยันแล้ว'] } }),
+            doing: await Booking.countDocuments({ status: 'กำลังดำเนินการ' }),
+            done: await Booking.countDocuments({ status: 'เสร็จสิ้น' })
+        };
 
         // Low stock count
         const products = await Product.find({});
@@ -98,6 +112,39 @@ export async function GET() {
         const ppfCount = allPendingBookings.filter((b: any) => b.serviceId?.name?.includes('PPF') || b.serviceId?.name?.includes('ฟิล์ม')).length;
         const readyCount = await Booking.countDocuments({ status: 'เสร็จสิ้น', updatedAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) } }); // Today finished
 
+        const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+        const totalYearToDate = await Booking.countDocuments({ createdAt: { $gte: startOfYear } });
+
+        const suggestedQueue = await Booking.find({ status: { $in: ['รอดำเนินการ', 'ยืนยันแล้ว', 'กำลังดำเนินการ'] } })
+            .populate('serviceId', 'name')
+            .sort({ bookingDate: 1 })
+            .limit(3);
+
+        // Aggregate monthly bookings (Online vs Offline)
+        const monthlyBookingsData = await Booking.aggregate([
+            { $match: { createdAt: { $gte: startOfYear } } },
+            {
+                $group: {
+                    _id: { 
+                        month: { $month: "$createdAt" },
+                        source: "$bookingSource"
+                    },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const formattedMonthlyBookings = monthNames.map((name, index) => {
+            const month = index + 1;
+            const onlineData = monthlyBookingsData.find(d => d._id.month === month && d._id.source === 'online');
+            const offlineData = monthlyBookingsData.find(d => d._id.month === month && (d._id.source === 'offline' || !d._id.source));
+            return {
+                name,
+                online: onlineData ? onlineData.count : 0,
+                offline: offlineData ? offlineData.count : 0
+            };
+        });
+
         return NextResponse.json({
             stats: {
                 totalRevenue,
@@ -109,16 +156,36 @@ export async function GET() {
                 wash: washCount,
                 ceramic: ceramicCount,
                 ppf: ppfCount,
-                ready: readyCount
+                ready: readyCount,
+                rustProofing: await Booking.countDocuments({ 
+                    status: { $ne: 'ยกเลิก' },
+                    $or: [
+                        { 'serviceId': { $in: (await Service.find({ name: /พ่นกันสนิม/i })).map(s => s._id) } }
+                    ]
+                }),
+                wrapCar: await Booking.countDocuments({ 
+                    status: { $ne: 'ยกเลิก' },
+                    $or: [
+                        { 'serviceId': { $in: (await Service.find({ name: /wrap/i })).map(s => s._id) } }
+                    ]
+                })
             },
+            realtimeQueue: {
+                total: queueStats.waiting + queueStats.doing + queueStats.done,
+                ...queueStats
+            },
+            totalCars,
+            suggestedQueue,
             extraStats: {
                 newMembers: newMembersThisMonth,
                 pendingRevenue,
                 lowStock: lowStockCount,
                 todayCount,
+                totalYearToDate,
                 completionRate
             },
             monthlyRevenue: formattedMonthlyData,
+            monthlyBookings: formattedMonthlyBookings,
             recentBookings
         });
     } catch (error: any) {

@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
         await connectDB();
         const body = await req.json();
         const { lineUserId, firstName, lastName, phone } = body;
+        console.log(`[Registration] UID: ${lineUserId}, Phone: ${phone}`);
 
         if (!lineUserId || !firstName || !lastName || !phone) {
             return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' }, { status: 400 });

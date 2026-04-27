@@ -3,26 +3,53 @@
 import { useEffect, useState } from "react";
 import { SidebarLeft } from "@/components/dashboard/SidebarLeft";
 import {
-    Search, Filter, User, Phone, Calendar,
-    Car, Clock, MoreVertical, Edit, Trash2,
-    CheckCircle2, AlertCircle, Loader2, Plus,
-    ExternalLink, MapPin, MessageSquare, ListFilter,
-    ArrowRight, History, Sparkles
+    Search, User, Phone, Calendar,
+    Car, Clock, Edit, Trash2,
+    CheckCircle2, Loader2, Plus,
+    ExternalLink, Sparkles, Minus, Gift,
+    ChevronLeft, ChevronRight, MoreHorizontal,
+    UserPlus, ShieldCheck, Mail, MapPin, History,
+    TrendingUp, Users, Award, Bell, Filter,
+    Download, LayoutGrid, List, Info, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import {
     Dialog, DialogContent, DialogHeader,
-    DialogTitle, DialogFooter, DialogTrigger
+    DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all"); // all, registered, overdue, with_cars
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<any>(null);
@@ -30,6 +57,12 @@ export default function CustomersPage() {
     const [customerBookings, setCustomerBookings] = useState<any[]>([]);
     const [isLoadingBookings, setIsLoadingBookings] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedCarFilter, setSelectedCarFilter] = useState<string>("all");
+    const [globalPackages, setGlobalPackages] = useState<any[]>([]);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchCustomers = async () => {
         setIsLoading(true);
@@ -48,12 +81,83 @@ export default function CustomersPage() {
 
     useEffect(() => {
         fetchCustomers();
+        fetchSettings();
     }, []);
 
-    const filteredCustomers = customers.filter(c =>
-        (c.firstName?.toLowerCase() + " " + c.lastName?.toLowerCase()).includes(searchTerm.toLowerCase()) ||
-        c.phone?.includes(searchTerm)
-    );
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            const pkgs = data.find((s: any) => s.key === 'global_packages')?.value || [];
+            setGlobalPackages(pkgs);
+        } catch (err) {
+            console.error("Failed to fetch settings:", err);
+        }
+    };
+
+    const calculateTimeRemaining = (nextDate: string) => {
+        if (!nextDate) return null;
+        const now = new Date();
+        const next = new Date(nextDate);
+        const diffInMs = next.getTime() - now.getTime();
+        return Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+    };
+
+    const filteredCustomers = customers.filter(c => {
+        // Search Filter
+        const matchesSearch = (c.firstName?.toLowerCase() + " " + c.lastName?.toLowerCase()).includes(searchTerm.toLowerCase()) ||
+            c.phone?.includes(searchTerm) ||
+            c.cars?.some((car: any) => car.plate?.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        if (!matchesSearch) return false;
+
+        // Status Filter
+        if (filterStatus === "registered") return c.isRegistered;
+        if (filterStatus === "overdue") {
+            const days = calculateTimeRemaining(c.nextServiceDate);
+            return days !== null && days <= 0;
+        }
+        if (filterStatus === "with_cars") return c.cars && c.cars.length > 0;
+        
+        return true;
+    });
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus]);
+
+    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage) || 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
+
+    const registeredCount = customers.filter(c => c.isRegistered).length;
+    const totalPoints = customers.reduce((sum, c) => sum + (c.points || 0), 0);
+    const totalCars = customers.reduce((sum, c) => sum + (c.cars?.length || 0), 0);
+
+    const handleExportCSV = () => {
+        if (filteredCustomers.length === 0) return alert("ไม่มีข้อมูลสำหรับการ Export");
+
+        const headers = ["ID", "Name", "Phone", "Points", "Registered", "Cars", "Next Service"];
+        const rows = filteredCustomers.map(c => [
+            c._id,
+            `${c.firstName} ${c.lastName}`,
+            c.phone,
+            c.points,
+            c.isRegistered ? "Yes" : "No",
+            c.cars?.map((car: any) => car.plate).join(" | "),
+            c.nextServiceDate ? new Date(c.nextServiceDate).toLocaleDateString('th-TH') : "-"
+        ]);
+
+        const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `customer_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const handleEditSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,6 +180,28 @@ export default function CustomersPage() {
         }
     };
 
+    const handleQuickSetNextService = async (customerId: string, months: number) => {
+        const today = new Date();
+        const nextDate = new Date(today.setMonth(today.getMonth() + months));
+        
+        try {
+            const res = await fetch(`/api/customers/${customerId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nextServiceDate: nextDate.toISOString() })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setCustomers(customers.map(c => c._id === updated._id ? updated : c));
+                if (viewingCustomer?._id === updated._id) {
+                    setViewingCustomer(updated);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to quick set next service:", error);
+        }
+    };
+
     const handleDelete = async (id: string, name: string) => {
         if (!confirm(`คุณต้องการลบข้อมูลลูกค้า "${name}" ใช่หรือไม่?`)) return;
         try {
@@ -92,6 +218,7 @@ export default function CustomersPage() {
         setViewingCustomer(customer);
         setIsViewModalOpen(true);
         setIsLoadingBookings(true);
+        setSelectedCarFilter("all");
         try {
             const res = await fetch(`/api/bookings?customerId=${customer._id}`);
             const data = await res.json();
@@ -105,482 +232,519 @@ export default function CustomersPage() {
         }
     };
 
-    const calculateTimeRemaining = (nextDate: string) => {
-        if (!nextDate) return null;
-        const now = new Date();
-        const next = new Date(nextDate);
-        const diffInMs = next.getTime() - now.getTime();
-        const diffInMonths = Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 30));
-        return diffInMonths;
+    const handleAddPackageFromGlobal = async (customer: any, globalPkg: any) => {
+        const newPackage = {
+            _id: Math.random().toString(36).substr(2, 9),
+            name: globalPkg.name,
+            totalWashes: globalPkg.totalWashes,
+            remainingWashes: globalPkg.totalWashes,
+            status: 'active',
+            purchaseDate: new Date().toISOString()
+        };
+
+        const updatedPackages = [...(customer.packages || []), newPackage];
+
+        try {
+            const res = await fetch(`/api/customers/${customer._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ packages: updatedPackages })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setCustomers(customers.map(c => c._id === updated._id ? updated : c));
+                setViewingCustomer(updated);
+                alert(`เพิ่มแพ็กเกจ "${globalPkg.name}" ให้ลูกค้าเรียบร้อยแล้ว ✨`);
+            }
+        } catch (error) {
+            console.error("Failed to add global package:", error);
+        }
     };
 
+    const handleDeductPackage = async (customer: any, packageId: string) => {
+        if (!confirm("ต้องการหักจำนวนครั้งการใช้งานในแพ็กเกจนี้ใช่หรือไม่?")) return;
+        
+        const updatedPackages = customer.packages.map((p: any) => {
+            if (p._id === packageId && p.remainingWashes > 0) {
+                return { ...p, remainingWashes: p.remainingWashes - 1 };
+            }
+            return p;
+        });
+
+        try {
+            const res = await fetch(`/api/customers/${customer._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ packages: updatedPackages })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setCustomers(customers.map(c => c._id === updated._id ? updated : c));
+                setViewingCustomer(updated);
+            }
+        } catch (error) {
+            console.error("Failed to deduct package:", error);
+        }
+    };
+
+    const filteredHistory = selectedCarFilter === "all" 
+        ? customerBookings 
+        : customerBookings.filter(b => b.carPlate === selectedCarFilter);
+
     return (
-        <div className="flex bg-[#f3f5f8] h-screen overflow-hidden font-sans w-full">
+        <div className="flex bg-[#f8fafc] h-screen overflow-hidden font-sans w-full text-slate-900">
             <SidebarLeft />
 
-            <main className="flex-1 px-6 py-6 overflow-y-auto w-full no-scrollbar">
-                {/* Header */}
-                <header className="flex justify-between items-center mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <main className="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
+                {/* Professional Stable Header */}
+                <header className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between shrink-0">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                            <User className="text-[#2563eb] fill-[#2563eb]/20" size={28} />
-                            จัดการลูกค้า (Customer Management)
+                        <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <Users size={24} className="text-blue-600" />
+                            ฐานข้อมูลลูกค้า
                         </h1>
-                        <p className="text-muted-foreground text-sm">ตรวจสอบข้อมูลลูกค้า รถ และติดตามกำหนดการเข้ารับบริการ</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Master Customer Database</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-6 px-6 border-r border-slate-100">
+                            <div className="text-right">
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Clients</div>
+                                <div className="text-sm font-black text-slate-900">{customers.length.toLocaleString()}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Cars</div>
+                                <div className="text-sm font-black text-blue-600">{totalCars.toLocaleString()}</div>
+                            </div>
+                        </div>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-9 px-4 rounded-xl border-slate-200 font-bold text-xs bg-white hover:bg-slate-50 transition-all"
+                            onClick={handleExportCSV}
+                        >
+                            <Download size={14} className="mr-2" /> Export CSV
+                        </Button>
                     </div>
                 </header>
 
-                {/* Filters */}
-                <div className="flex flex-col lg:flex-row gap-4 mb-8 items-stretch lg:items-center">
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2563eb] transition-colors" size={18} />
-                        <Input
-                            placeholder="ค้นหาชื่อลูกค้า..."
-                            className="w-full bg-white border-0 shadow-sm h-12 pl-12 pr-6 rounded-xl focus-visible:ring-2 focus-visible:ring-[#2563eb]/50 transition-all text-sm"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                <div className="p-8 flex-1 overflow-y-auto no-scrollbar space-y-6">
+                    {/* Search & Filter Bar */}
+                    <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                        <div className="relative flex-1 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
+                            <Input
+                                placeholder="ค้นหาด้วยชื่อ, เบอร์โทรศัพท์ หรือเลขทะเบียนรถ..."
+                                className="w-full bg-transparent border-0 h-10 pl-12 pr-6 text-sm font-medium text-slate-900 focus-visible:ring-0"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="h-6 w-[1px] bg-slate-100" />
+                        
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-10 rounded-xl font-bold text-xs px-4 text-slate-500 hover:text-slate-900">
+                                    <Filter size={16} className="mr-2" /> 
+                                    {filterStatus === "all" ? "คัดกรองทั้งหมด" : 
+                                     filterStatus === "registered" ? "สมาชิก Verified" : 
+                                     filterStatus === "overdue" ? "นัดหมายที่เลยกำหนด" : "ลูกค้าที่มีรถ"}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-xl border-slate-100">
+                                <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 py-1.5">Filter by Status</DropdownMenuLabel>
+                                <DropdownMenuItem className="rounded-lg font-bold text-xs py-2.5 cursor-pointer" onClick={() => setFilterStatus("all")}>ทั้งหมด</DropdownMenuItem>
+                                <DropdownMenuItem className="rounded-lg font-bold text-xs py-2.5 cursor-pointer" onClick={() => setFilterStatus("registered")}>สมาชิก Verified เท่านั้น</DropdownMenuItem>
+                                <DropdownMenuItem className="rounded-lg font-bold text-xs py-2.5 cursor-pointer" onClick={() => setFilterStatus("overdue")}>นัดหมายที่เลยกำหนด</DropdownMenuItem>
+                                <DropdownMenuItem className="rounded-lg font-bold text-xs py-2.5 cursor-pointer" onClick={() => setFilterStatus("with_cars")}>ลูกค้าที่มีข้อมูลรถ</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-                    <div className="bg-white shadow-sm rounded-xl px-5 h-12 flex items-center gap-3 border-0 transition-all min-w-[150px]">
-                        <div className="w-8 h-8 rounded-full bg-[#2563eb]/10 flex items-center justify-center shrink-0">
-                            <Sparkles size={16} className="text-[#65a30d]" />
-                        </div>
-                        <div className="flex flex-col justify-center">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">สมาชิกทั้งหมด</span>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-black text-gray-900 leading-none">{customers.length}</span>
-                                <span className="text-[10px] font-bold text-gray-500">คน</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Results Table/Grid */}
-                <div className="grid grid-cols-1 gap-4 pb-20">
-                    {isLoading ? (
-                        <div className="py-20 text-center bg-white rounded-2xl shadow-sm">
-                            <Loader2 className="h-10 w-10 animate-spin text-[#2563eb] mx-auto mb-4" />
-                            <p className="text-gray-500 text-sm">กำลังโหลดข้อมูลลูกค้า...</p>
-                        </div>
-                    ) : filteredCustomers.length === 0 ? (
-                        <div className="py-20 text-center bg-white rounded-2xl shadow-sm border border-dashed border-gray-200">
-                            <h3 className="text-lg font-bold text-gray-900">ไม่พบข้อมูลลูกค้า</h3>
-                        </div>
-                    ) : (
-                        filteredCustomers.map((c) => {
-                            const monthsLeft = calculateTimeRemaining(c.nextServiceDate);
-                            return (
-                                <Card key={c._id} className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all overflow-hidden bg-white">
-                                    <CardContent className="p-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-50 h-full min-h-[160px]">
-                                        {/* Profile Info */}
-                                        <div className="w-full md:w-[280px] p-5 flex flex-col justify-center bg-gray-50/50">
-                                            <div className="flex items-center gap-4 mb-3">
-                                                <div className="w-12 h-12 rounded-xl bg-[#2563eb]/20 flex items-center justify-center shrink-0">
-                                                    <User size={24} className="text-black" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-base text-gray-900">{c.firstName} {c.lastName}</h3>
-                                                    <div className="flex items-center text-xs text-gray-500 font-medium">
-                                                        <Phone size={12} className="mr-1" /> {c.phone}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Badge className="bg-orange-100 text-orange-600 border-0 text-[10px]">{c.points} PTS</Badge>
-                                                {c.isRegistered && <Badge className="bg-green-100 text-green-600 border-0 text-[10px]">Registered</Badge>}
-                                            </div>
-                                        </div>
-
-                                        {/* Car Info */}
-                                        <div className="flex-1 p-6 flex flex-col justify-center">
-                                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">ข้อมูลรถยนต์</div>
-                                            {c.cars && c.cars.length > 0 ? (
-                                                <div className="space-y-2">
-                                                    {c.cars.map((car: any, idx: number) => (
-                                                        <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                                            <Car className="text-gray-400 shrink-0" size={20} />
-                                                            <div className="flex-1">
-                                                                <div className="text-sm font-bold text-gray-900">{car.plate}</div>
-                                                                <div className="text-[10px] text-gray-500">{car.brand} {car.model} • {car.size}</div>
+                    {/* Stable Data Table */}
+                    <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader className="bg-slate-50/50">
+                                    <TableRow className="border-slate-200 h-12">
+                                        <TableHead className="pl-6 font-bold text-slate-500 text-[10px] uppercase tracking-wider">ลูกค้า</TableHead>
+                                        <TableHead className="font-bold text-slate-500 text-[10px] uppercase tracking-wider">เบอร์โทรศัพท์</TableHead>
+                                        <TableHead className="font-bold text-slate-500 text-[10px] uppercase tracking-wider text-center">แต้มสะสม</TableHead>
+                                        <TableHead className="font-bold text-slate-500 text-[10px] uppercase tracking-wider">ยานพาหนะ</TableHead>
+                                        <TableHead className="font-bold text-slate-500 text-[10px] uppercase tracking-wider">นัดหมายถัดไป</TableHead>
+                                        <TableHead className="pr-6 text-right font-bold text-slate-500 text-[10px] uppercase tracking-wider">จัดการ</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {isLoading ? (
+                                        <TableRow><TableCell colSpan={6} className="h-96 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" /></TableCell></TableRow>
+                                    ) : paginatedCustomers.length === 0 ? (
+                                        <TableRow><TableCell colSpan={6} className="h-96 text-center text-slate-400 font-bold uppercase tracking-widest">ไม่พบข้อมูลลูกค้า</TableCell></TableRow>
+                                    ) : (
+                                        paginatedCustomers.map((c) => {
+                                            const daysLeft = calculateTimeRemaining(c.nextServiceDate);
+                                            return (
+                                                <TableRow key={c._id} className="group hover:bg-slate-50 transition-colors border-slate-100 h-16">
+                                                    <TableCell className="pl-6">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="relative shrink-0">
+                                                                <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                                                                    <User size={20} />
+                                                                </div>
+                                                                {c.isRegistered && (
+                                                                    <div className="absolute -right-1 -bottom-1 w-4.5 h-4.5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+                                                                        <CheckCircle2 size={10} className="text-white" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div className="font-bold text-slate-900 text-sm tracking-tight leading-none mb-1 truncate">{c.firstName} {c.lastName}</div>
+                                                                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ID: {c._id.substring(c._id.length-6).toUpperCase()}</div>
                                                             </div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-sm text-gray-400 italic">ยังไม่มีข้อมูลรถ</p>
-                                            )}
-                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-xs font-bold text-slate-600">{c.phone}</TableCell>
+                                                    <TableCell className="text-center font-black text-slate-900 text-sm">{c.points.toLocaleString()}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-1.5 flex-wrap max-w-[300px]">
+                                                            {c.cars && c.cars.length > 0 ? (
+                                                                <>
+                                                                    {c.cars.slice(0, 2).map((car: any, idx: number) => (
+                                                                        <Badge key={idx} variant="outline" className="bg-white border-slate-200 text-slate-700 font-bold text-[10px] h-6 px-2 rounded-lg flex items-center gap-1.5 shadow-sm group-hover:border-blue-200 transition-all">
+                                                                            <Car size={10} className="text-blue-500" />
+                                                                            {car.plate}
+                                                                        </Badge>
+                                                                    ))}
+                                                                    {c.cars.length > 2 && (
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <Badge variant="secondary" className="h-6 px-2 text-[10px] font-black text-slate-500 bg-slate-100 hover:bg-slate-200 cursor-help rounded-lg">
+                                                                                        +{c.cars.length - 2} คัน
+                                                                                    </Badge>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent className="bg-slate-900 text-white border-0 rounded-xl p-3 shadow-2xl">
+                                                                                    <div className="space-y-2">
+                                                                                        {c.cars.slice(2).map((car: any, i: number) => (
+                                                                                            <div key={i} className="text-[10px] font-bold flex items-center gap-3 border-b border-slate-800 pb-1 last:border-0 last:pb-0">
+                                                                                                <Car size={12} className="text-blue-500" /> 
+                                                                                                <div>
+                                                                                                    <div className="text-white">{car.plate}</div>
+                                                                                                    <div className="text-slate-500 uppercase">{car.brand} {car.model}</div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                    )}
+                                                                </>
+                                                            ) : <span className="text-xs text-slate-200">/</span>}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {daysLeft !== null ? (
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={cn(
+                                                                    "w-9 h-9 rounded-xl flex items-center justify-center border font-black text-sm",
+                                                                    daysLeft <= 3 ? "bg-rose-50 border-rose-100 text-rose-600" : "bg-blue-50 border-blue-100 text-blue-600"
+                                                                )}>
+                                                                    {Math.abs(daysLeft)}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{daysLeft >= 0 ? 'เหลืออีก (วัน)' : 'เลยกำหนด'}</div>
+                                                                    <div className="text-[10px] font-bold text-slate-600">{new Date(c.nextServiceDate).toLocaleDateString('th-TH')}</div>
+                                                                </div>
+                                                            </div>
+                                                        ) : <span className="text-xs text-slate-200">/</span>}
+                                                    </TableCell>
+                                                    <TableCell className="pr-6 text-right">
+                                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                                            <Button
+                                                                variant="ghost" size="icon"
+                                                                className="h-9 w-9 rounded-xl hover:bg-blue-600 hover:text-white text-blue-600 transition-all"
+                                                                onClick={() => handleViewProfile(c)}
+                                                            >
+                                                                <ExternalLink size={16} />
+                                                            </Button>
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl text-slate-400 hover:bg-slate-100">
+                                                                        <MoreHorizontal className="h-4.5 w-4.5" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 border-slate-100 shadow-2xl bg-white">
+                                                                    <DropdownMenuItem className="rounded-xl font-bold text-xs py-3 cursor-pointer focus:bg-slate-50" onClick={() => { setEditingCustomer({ ...c }); setIsEditModalOpen(true); }}>
+                                                                        <Edit className="mr-3 h-4 w-4 text-blue-600" /> แก้ไขข้อมูลโปรไฟล์
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator className="bg-slate-50" />
+                                                                    <DropdownMenuItem className="rounded-xl font-bold text-xs py-3 text-rose-600 focus:bg-rose-50 cursor-pointer" onClick={() => handleDelete(c._id, `${c.firstName} ${c.lastName}`)}>
+                                                                        <Trash2 className="mr-3 h-4 w-4" /> ลบข้อมูลลูกค้า
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
 
-                                        {/* Maintenance Tracking */}
-                                        <div className="w-full md:w-[320px] p-6 flex flex-col justify-center">
-                                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">การติดตามการบริการ</div>
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">บริการล่าสุด:</span>
-                                                    <span className="text-xs font-bold text-gray-900">{c.lastServiceDate ? new Date(c.lastServiceDate).toLocaleDateString('th-TH') : '-'}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between p-3 rounded-xl bg-black text-white shadow-md">
-                                                    <div className="flex items-center gap-2">
-                                                        <Clock size={16} className="text-[#2563eb]" />
-                                                        <span className="text-[10px] font-bold">กำหนดครั้งถัดไป</span>
-                                                    </div>
-                                                    <div className="flex items-baseline gap-1">
-                                                        {monthsLeft !== null ? (
-                                                            <>
-                                                                <span className="text-lg font-black text-[#2563eb]">{monthsLeft}</span>
-                                                                <span className="text-[9px] text-white/60">เดือน</span>
-                                                            </>
-                                                        ) : (
-                                                            <span className="text-xs text-white/50">ไม่ได้กำหนด</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="w-full md:w-[120px] p-6 flex items-center justify-center gap-2">
-                                            <Button
-                                                variant="ghost" size="icon"
-                                                className="w-10 h-10 rounded-full hover:bg-[#2563eb]/10 text-[#2563eb]"
-                                                onClick={() => handleViewProfile(c)}
-                                                title="ดูโปรไฟล์ลูกค้า"
-                                            >
-                                                <ExternalLink size={20} />
-                                            </Button>
-                                            <Button
-                                                variant="ghost" size="icon"
-                                                className="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900"
-                                                onClick={() => { setEditingCustomer({ ...c }); setIsEditModalOpen(true); }}
-                                            >
-                                                <Edit size={20} />
-                                            </Button>
-                                            <Button
-                                                variant="ghost" size="icon"
-                                                className="w-10 h-10 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500"
-                                                onClick={() => handleDelete(c._id, `${c.firstName} ${c.lastName}`)}
-                                            >
-                                                <Trash2 size={20} />
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )
-                        })
+                    {/* Professional Pagination */}
+                    {!isLoading && (
+                        <div className="flex items-center justify-between gap-6 px-4 pb-12">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                แสดงผล {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredCustomers.length)} จาก {filteredCustomers.length}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline" size="sm" className="h-10 px-5 rounded-2xl text-slate-700 border-slate-200 bg-white font-bold text-xs hover:bg-slate-50 disabled:opacity-30"
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft size={16} className="mr-2" /> ก่อนหน้า
+                                </Button>
+                                <Button
+                                    variant="outline" size="sm" className="h-10 px-5 rounded-2xl text-slate-700 border-slate-200 bg-white font-bold text-xs hover:bg-slate-50 disabled:opacity-30"
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    ถัดไป <ChevronRight size={16} className="ml-2" />
+                                </Button>
+                            </div>
+                        </div>
                     )}
                 </div>
 
-                {/* Edit Modal */}
-                <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                    <DialogContent className="sm:max-w-[600px] rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
-                        <DialogHeader className="bg-[#0a0b0a] p-6 text-white">
-                            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-                                <Edit size={24} className="text-[#2563eb]" />
-                                แก้ไขข้อมูลลูกค้า
-                            </DialogTitle>
+                {/* Professional Customer View Modal */}
+                <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+                    <DialogContent className="sm:max-w-[850px] rounded-[2rem] p-0 overflow-hidden border-0 bg-[#f8fafc] shadow-2xl">
+                        <DialogHeader className="bg-white px-8 py-6 border-b border-slate-100 flex-row items-center justify-between">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shrink-0">
+                                    <User size={32} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <DialogTitle className="text-2xl font-black text-slate-900 tracking-tighter">
+                                            {viewingCustomer?.firstName} {viewingCustomer?.lastName}
+                                        </DialogTitle>
+                                        <Badge className="bg-blue-50 text-blue-600 border-0 text-[9px] font-black h-5 px-2 rounded-md uppercase tracking-wider">Member</Badge>
+                                    </div>
+                                    <div className="flex items-center gap-5 text-[11px] font-bold text-slate-500">
+                                        <span className="flex items-center gap-1.5"><Phone size={12} className="text-blue-500" /> {viewingCustomer?.phone}</span>
+                                        <span className="flex items-center gap-1.5 text-amber-600"><Award size={12} /> {viewingCustomer?.points} แต้ม</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">นัดหมายครั้งถัดไป</div>
+                                <div className="text-xl font-black text-blue-600 leading-none mb-3">
+                                    {viewingCustomer?.nextServiceDate ? new Date(viewingCustomer.nextServiceDate).toLocaleDateString('th-TH') : '-'}
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="h-7 px-3 rounded-lg text-[9px] font-black bg-white border-blue-100 text-blue-600 hover:bg-blue-50"
+                                        onClick={() => handleQuickSetNextService(viewingCustomer._id, 1)}
+                                    >
+                                        + 1 เดือน
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="h-7 px-3 rounded-lg text-[9px] font-black bg-white border-blue-100 text-blue-600 hover:bg-blue-50"
+                                        onClick={() => handleQuickSetNextService(viewingCustomer._id, 3)}
+                                    >
+                                        + 3 เดือน
+                                    </Button>
+                                </div>
+                            </div>
                         </DialogHeader>
-                        <div className="max-h-[70vh] overflow-y-auto no-scrollbar">
-                        {editingCustomer && (
-                            <form onSubmit={handleEditSave} className="p-8 space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>ชื่อจริง</Label>
-                                        <Input
-                                            value={editingCustomer.firstName}
-                                            onChange={e => setEditingCustomer({ ...editingCustomer, firstName: e.target.value })}
-                                            className="rounded-xl"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>นามสกุล</Label>
-                                        <Input
-                                            value={editingCustomer.lastName}
-                                            onChange={e => setEditingCustomer({ ...editingCustomer, lastName: e.target.value })}
-                                            className="rounded-xl"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>เบอร์โทรศัพท์</Label>
-                                    <Input
-                                        value={editingCustomer.phone}
-                                        onChange={e => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
-                                        className="rounded-xl"
-                                    />
-                                </div>
 
-                                <div className="grid grid-cols-2 gap-4 border-t pt-6">
-                                    <div className="space-y-2">
-                                        <Label>บริการล่าสุด</Label>
-                                        <Input
-                                            type="date"
-                                            value={editingCustomer.lastServiceDate ? new Date(editingCustomer.lastServiceDate).toISOString().split('T')[0] : ''}
-                                            onChange={e => setEditingCustomer({ ...editingCustomer, lastServiceDate: e.target.value })}
-                                            className="rounded-xl"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>กำหนดเช็คอัพครั้งถัดไป</Label>
-                                        <Input
-                                            type="date"
-                                            value={editingCustomer.nextServiceDate ? new Date(editingCustomer.nextServiceDate).toISOString().split('T')[0] : ''}
-                                            onChange={e => setEditingCustomer({ ...editingCustomer, nextServiceDate: e.target.value })}
-                                            className="rounded-xl border-[#2563eb]/50 bg-[#2563eb]/5"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4 border-t pt-6">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-sm font-bold flex items-center gap-2">
-                                            <Car size={18} className="text-[#2563eb]" /> จัดการรถยนต์ ({editingCustomer.cars?.length || 0})
-                                        </Label>
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="rounded-xl border-[#2563eb] text-[#2563eb] hover:bg-[#2563eb]/5"
-                                            onClick={() => {
-                                                const newCars = [...(editingCustomer.cars || []), { plate: '', brand: '', model: '', color: '', size: 'S' }];
-                                                setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                            }}
-                                        >
-                                            <Plus size={16} className="mr-1" /> เพิ่มรถ
-                                        </Button>
-                                    </div>
-                                    
+                        <div className="max-h-[60vh] overflow-y-auto no-scrollbar p-8 space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                {/* Left: Assets */}
+                                <div className="md:col-span-5 space-y-6">
                                     <div className="space-y-4">
-                                        {editingCustomer.cars?.map((car: any, idx: number) => (
-                                            <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 relative group">
-                                                <button 
-                                                    type="button"
-                                                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                                    onClick={() => {
-                                                        const newCars = editingCustomer.cars.filter((_: any, i: number) => i !== idx);
-                                                        setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                                    }}
-                                                >
-                                                    <Trash2 size={12} />
-                                                </button>
-                                                <div className="grid grid-cols-2 gap-3 mb-3">
-                                                    <div className="space-y-1">
-                                                        <Label className="text-[10px] uppercase font-bold text-gray-400">ทะเบียนรถ</Label>
-                                                        <Input 
-                                                            placeholder="เช่น กข 1234"
-                                                            value={car.plate}
-                                                            onChange={e => {
-                                                                const newCars = [...editingCustomer.cars];
-                                                                newCars[idx].plate = e.target.value;
-                                                                setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                                            }}
-                                                            className="h-9 text-xs rounded-lg"
-                                                        />
+                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                            <Car size={16} className="text-blue-500" /> รายการรถ
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {viewingCustomer?.cars?.map((car: any, idx: number) => (
+                                                <div key={idx} className={cn(
+                                                    "bg-white p-4 rounded-2xl border transition-all cursor-pointer group/car shadow-sm",
+                                                    selectedCarFilter === car.plate ? "border-blue-500 ring-2 ring-blue-500/5" : "border-slate-100 hover:border-blue-200"
+                                                )} onClick={() => setSelectedCarFilter(car.plate)}>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="text-lg font-black text-slate-900 tracking-tight">{car.plate}</div>
+                                                        <Badge variant="secondary" className="text-[9px] font-black h-5 px-2 rounded-md uppercase">{car.size}</Badge>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <Label className="text-[10px] uppercase font-bold text-gray-400">ขนาดรถ</Label>
-                                                        <select 
-                                                            className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                            value={car.size}
-                                                            onChange={e => {
-                                                                const newCars = [...editingCustomer.cars];
-                                                                newCars[idx].size = e.target.value;
-                                                                setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                                            }}
-                                                        >
-                                                            <option value="S">Small (S)</option>
-                                                            <option value="M">Medium (M)</option>
-                                                            <option value="L">Large (L)</option>
-                                                            <option value="XL">Extra Large (XL)</option>
-                                                            <option value="XXL">Super Car (XXL)</option>
-                                                        </select>
+                                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{car.brand} {car.model}</div>
+                                                    <div className="text-[9px] font-bold text-slate-400 flex items-center gap-3 border-t border-slate-50 pt-2">
+                                                        <span>สี: {car.color}</span>
+                                                        <span>ปี: {car.year || '-'}</span>
+                                                        <ExternalLink size={10} className={cn("ml-auto", selectedCarFilter === car.plate ? "text-blue-500" : "text-slate-200")} />
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-3 gap-3">
-                                                    <div className="space-y-1">
-                                                        <Label className="text-[10px] uppercase font-bold text-gray-400">ยี่ห้อ</Label>
-                                                        <Input 
-                                                            placeholder="Toyota"
-                                                            value={car.brand}
-                                                            onChange={e => {
-                                                                const newCars = [...editingCustomer.cars];
-                                                                newCars[idx].brand = e.target.value;
-                                                                setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                                            }}
-                                                            className="h-9 text-xs rounded-lg"
-                                                        />
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Packages Section */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                                <Sparkles size={16} className="text-emerald-500" /> แพ็กเกจของลูกค้า
+                                            </h3>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="h-7 px-2.5 rounded-lg text-[9px] font-black bg-emerald-50 text-emerald-600 hover:bg-emerald-100">
+                                                        <Plus size={12} className="mr-1" /> เพิ่มแพ็กเกจ
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-xl border-slate-100 bg-white">
+                                                    <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 py-1.5">เลือกจากแพ็กเกจส่วนกลาง</DropdownMenuLabel>
+                                                    {globalPackages.length > 0 ? (
+                                                        globalPackages.map((gp, i) => (
+                                                            <DropdownMenuItem 
+                                                                key={i} 
+                                                                className="rounded-xl font-black text-xs py-4 px-4 cursor-pointer flex justify-between items-center hover:bg-emerald-600 hover:text-white focus:bg-emerald-600 focus:text-white transition-all mb-1 border border-slate-50 shadow-sm"
+                                                                onSelect={() => handleAddPackageFromGlobal(viewingCustomer, gp)}
+                                                            >
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm tracking-tight">{gp.name}</span>
+                                                                    <span className="text-[9px] opacity-60 uppercase font-black">คลิกเพื่อเพิ่มแพ็กเกจนี้</span>
+                                                                </div>
+                                                                <Badge className="bg-emerald-500 text-white border-0 h-6 px-2 font-black shadow-sm group-hover:bg-white group-hover:text-emerald-600">
+                                                                    {gp.totalWashes} ครั้ง
+                                                                </Badge>
+                                                            </DropdownMenuItem>
+                                                        ))
+                                                    ) : (
+                                                        <div className="text-[10px] text-slate-400 font-bold px-2 py-4 text-center italic">ยังไม่ได้ตั้งค่าแพ็กเกจส่วนกลาง</div>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                        
+                                        {viewingCustomer?.packages?.some((p:any) => p.status === 'active') ? (
+                                            viewingCustomer.packages.filter((p:any) => p.status === 'active').map((pkg: any, idx: number) => (
+                                                <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group/pkg">
+                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-full -mr-8 -mt-8 opacity-50"></div>
+                                                    <div className="relative flex items-center justify-between mb-4">
+                                                        <div className="text-[11px] font-black text-slate-900">{pkg.name}</div>
+                                                        <div className="text-2xl font-black text-emerald-600 leading-none">{pkg.remainingWashes} <span className="text-[10px] text-slate-300">/ {pkg.totalWashes}</span></div>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <Label className="text-[10px] uppercase font-bold text-gray-400">รุ่น</Label>
-                                                        <Input 
-                                                            placeholder="Camry"
-                                                            value={car.model}
-                                                            onChange={e => {
-                                                                const newCars = [...editingCustomer.cars];
-                                                                newCars[idx].model = e.target.value;
-                                                                setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                                            }}
-                                                            className="h-9 text-xs rounded-lg"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <Label className="text-[10px] uppercase font-bold text-gray-400">สี</Label>
-                                                        <Input 
-                                                            placeholder="ขาว"
-                                                            value={car.color}
-                                                            onChange={e => {
-                                                                const newCars = [...editingCustomer.cars];
-                                                                newCars[idx].color = e.target.value;
-                                                                setEditingCustomer({ ...editingCustomer, cars: newCars });
-                                                            }}
-                                                            className="h-9 text-xs rounded-lg"
-                                                        />
-                                                    </div>
+                                                    <Button className="w-full h-9 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-black text-[10px] shadow-lg shadow-slate-100" onClick={(e) => { e.stopPropagation(); handleDeductPackage(viewingCustomer, pkg._id); }}>บันทึกการใช้งาน (หัก 1 ครั้ง)</Button>
                                                 </div>
-                                            </div>
-                                        ))}
-                                        {(!editingCustomer.cars || editingCustomer.cars.length === 0) && (
-                                            <div className="text-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                                                <p className="text-xs text-gray-400">ยังไม่มีข้อมูลรถ กดปุ่ม "เพิ่มรถ" เพื่อเริ่มบันทึก</p>
-                                            </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-6 text-center bg-white rounded-2xl border border-dashed border-slate-100 text-[9px] font-black text-slate-300 uppercase tracking-widest">ยังไม่มีแพ็กเกจ</div>
                                         )}
                                     </div>
                                 </div>
 
-                                <DialogFooter className="p-6 pt-0">
-                                    <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>ยกเลิก</Button>
-                                    <Button type="submit" disabled={isSubmitting} className="bg-[#2563eb] text-white hover:bg-blue-700 rounded-xl px-8 font-bold">
-                                        {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : 'บันทึกข้อมูล'}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        )}
+                                {/* Right: History */}
+                                <div className="md:col-span-7 space-y-6">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                            <History size={16} className="text-blue-500" /> ประวัติการใช้บริการ
+                                        </h3>
+                                        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-100 shadow-sm">
+                                            <Button variant="ghost" size="sm" className={cn("h-7 px-3 text-[9px] font-black rounded-lg", selectedCarFilter === "all" ? "bg-slate-900 text-white" : "text-slate-400")} onClick={() => setSelectedCarFilter("all")}>ทั้งหมด</Button>
+                                            {viewingCustomer?.cars?.slice(0, 2).map((car: any) => (
+                                                <Button key={car.plate} variant="ghost" size="sm" className={cn("h-7 px-3 text-[9px] font-black rounded-lg", selectedCarFilter === car.plate ? "bg-slate-900 text-white" : "text-slate-400")} onClick={() => setSelectedCarFilter(car.plate)}>{car.plate}</Button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {isLoadingBookings ? (
+                                            <div className="py-20 text-center"><Loader2 className="animate-spin h-6 w-6 mx-auto text-blue-500" /></div>
+                                        ) : filteredHistory.length > 0 ? (
+                                            filteredHistory.map((b: any) => (
+                                                <div key={b._id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                                                            <Car size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-black text-slate-900 leading-tight mb-1">{b.serviceId?.name}</div>
+                                                            <div className="flex items-center gap-3">
+                                                                <Badge className="text-[8px] font-black bg-blue-50 text-blue-600 border-0 h-4.5 px-2 rounded-md">{b.carPlate}</Badge>
+                                                                <span className="text-[10px] text-slate-400 font-bold uppercase">{new Date(b.bookingDate).toLocaleDateString('th-TH')}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-lg font-black text-slate-900 leading-none mb-1">฿{b.price?.toLocaleString()}</div>
+                                                        <Badge className={cn("text-[7px] font-bold px-2 py-0.5 rounded-md border-0 uppercase tracking-widest", b.status === 'เสร็จสิ้น' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600')}>{b.status}</Badge>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-20 text-center bg-white rounded-2xl border border-dashed border-slate-200 text-[10px] font-black text-slate-300 uppercase tracking-widest">No History Data</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <DialogFooter className="bg-white px-8 py-5 border-t border-slate-100 flex items-center justify-between">
+                            <Button variant="ghost" size="sm" className="rounded-xl px-6 h-10 font-black text-[10px] text-slate-400 uppercase tracking-widest" onClick={() => setIsViewModalOpen(false)}>ปิดหน้าต่าง</Button>
+                            <Button size="sm" className="bg-slate-900 text-white hover:bg-black rounded-xl px-10 h-10 font-black text-xs shadow-lg transition-all" onClick={() => { setIsViewModalOpen(false); setEditingCustomer({...viewingCustomer}); setIsEditModalOpen(true); }}>
+                                แก้ไขข้อมูลโปรไฟล์
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
 
-                {/* View Profile Modal */}
-                <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-                    <DialogContent className="sm:max-w-[800px] rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
-                        <DialogHeader className="bg-[#0a0b0a] p-8 text-white relative">
-                            <div className="flex items-center gap-6">
-                                <div className="w-20 h-20 rounded-2xl bg-[#2563eb] flex items-center justify-center shadow-xl shadow-[#2563eb]/20 shrink-0">
-                                    <User size={40} className="text-white" />
-                                </div>
-                                <div className="flex-1">
-                                    <DialogTitle className="text-3xl font-black tracking-tight mb-1">
-                                        {viewingCustomer?.firstName} {viewingCustomer?.lastName}
-                                    </DialogTitle>
-                                    <div className="flex items-center gap-4 text-gray-400 text-sm font-medium">
-                                        <span className="flex items-center gap-1.5"><Phone size={14} className="text-[#2563eb]" /> {viewingCustomer?.phone}</span>
-                                        <span className="flex items-center gap-1.5"><Badge className="bg-[#2563eb]/20 text-[#2563eb] border-0">{viewingCustomer?.points} PTS</Badge></span>
-                                    </div>
-                                </div>
-                            </div>
+                {/* Stable Edit Modal */}
+                <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                    <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-0 overflow-hidden border-0 bg-white shadow-2xl">
+                        <DialogHeader className="bg-slate-900 px-8 py-5 text-white">
+                            <DialogTitle className="text-lg font-bold">แก้ไขฐานข้อมูลลูกค้า</DialogTitle>
                         </DialogHeader>
-                        <div className="max-h-[75vh] overflow-y-auto no-scrollbar bg-[#f8fafc] p-8">
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                                {/* Left Side: Cars */}
-                                <div className="md:col-span-5 space-y-6">
-                                    <div>
-                                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <Car size={18} className="text-[#2563eb]" /> รถที่ลงทะเบียน ({viewingCustomer?.cars?.length || 0})
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {viewingCustomer?.cars && viewingCustomer.cars.length > 0 ? (
-                                                viewingCustomer.cars.map((car: any, idx: number) => (
-                                                    <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm group hover:border-[#2563eb]/30 transition-all">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-lg font-black text-gray-900">{car.plate}</span>
-                                                            <Badge variant="outline" className="text-[10px] uppercase">{car.size}</Badge>
-                                                        </div>
-                                                        <div className="text-xs text-gray-500 font-bold">{car.brand} {car.model}</div>
-                                                        <div className="mt-2 text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded inline-block">Color: {car.color}</div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                                                    <p className="text-xs text-gray-400">ไม่มีข้อมูลรถ</p>
-                                                </div>
-                                            )}
+                        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar">
+                            {editingCustomer && (
+                                <form onSubmit={handleEditSave} className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">First Name</Label>
+                                            <Input value={editingCustomer.firstName} onChange={e => setEditingCustomer({...editingCustomer, firstName: e.target.value})} className="h-10 text-xs font-bold rounded-xl" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">Last Name</Label>
+                                            <Input value={editingCustomer.lastName} onChange={e => setEditingCustomer({...editingCustomer, lastName: e.target.value})} className="h-10 text-xs font-bold rounded-xl" />
                                         </div>
                                     </div>
-
-                                    <Card className="bg-black text-white p-6 rounded-[2rem] border-0 shadow-xl overflow-hidden relative">
-                                        <div className="relative z-10">
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2563eb] mb-2">กำหนดการครั้งถัดไป</h4>
-                                            <div className="text-2xl font-black mb-1">
-                                                {viewingCustomer?.nextServiceDate ? new Date(viewingCustomer.nextServiceDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'ยังไม่ได้ระบุ'}
-                                            </div>
-                                            <p className="text-[10px] text-gray-400">กรุณาติดต่อแจ้งเตือนลูกค้าก่อนถึงกำหนด 3 วัน</p>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-bold text-slate-400 uppercase">Phone Number</Label>
+                                        <Input value={editingCustomer.phone} onChange={e => setEditingCustomer({...editingCustomer, phone: e.target.value})} className="h-10 text-xs font-black rounded-xl" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 border-t pt-6">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">Last Service</Label>
+                                            <Input type="date" value={editingCustomer.lastServiceDate ? new Date(editingCustomer.lastServiceDate).toISOString().split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, lastServiceDate: e.target.value})} className="h-10 text-xs font-bold rounded-xl" />
                                         </div>
-                                        <Clock className="absolute -right-4 -bottom-4 text-[#2563eb] opacity-20 w-24 h-24" />
-                                    </Card>
-                                </div>
-
-                                {/* Right Side: Service History */}
-                                <div className="md:col-span-7 space-y-6">
-                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <History size={18} className="text-[#2563eb]" /> ประวัติการใช้บริการ
-                                    </h3>
-                                    
-                                    {isLoadingBookings ? (
-                                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100">
-                                            <Loader2 className="animate-spin text-[#2563eb] mb-2" />
-                                            <p className="text-xs text-gray-400">กำลังโหลดประวัติ...</p>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-blue-500 uppercase">Next Service Due</Label>
+                                            <Input type="date" value={editingCustomer.nextServiceDate ? new Date(editingCustomer.nextServiceDate).toISOString().split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, nextServiceDate: e.target.value})} className="h-10 text-xs font-black text-blue-600 rounded-xl bg-blue-50 border-blue-100" />
                                         </div>
-                                    ) : customerBookings.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {customerBookings.map((b: any) => {
-                                                const carDetails = viewingCustomer?.cars?.find((c: any) => c.plate === b.carPlate);
-                                                return (
-                                                    <div key={b._id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white transition-all">
-                                                                <Car size={24} />
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-sm font-black text-gray-900 leading-tight mb-1">{b.serviceId?.name}</div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Badge variant="secondary" className="text-[10px] font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 border-0 px-2 h-5">
-                                                                        {b.carPlate}
-                                                                    </Badge>
-                                                                    {carDetails && (
-                                                                        <span className="text-[11px] font-bold text-gray-600">
-                                                                            {carDetails.brand} {carDetails.model}
-                                                                        </span>
-                                                                    )}
-                                                                    <span className="text-[10px] text-gray-400 font-medium">
-                                                                        • {new Date(b.bookingDate).toLocaleDateString('th-TH')}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-sm font-black text-gray-900">฿{b.price?.toLocaleString()}</div>
-                                                            <Badge className={`text-[9px] px-2 py-0 h-4 border-0 mt-1 ${
-                                                                b.status === 'เสร็จสิ้น' ? 'bg-green-100 text-green-600' : 
-                                                                b.status === 'ยกเลิก' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
-                                                            }`}>
-                                                                {b.status}
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-                                            <p className="text-sm text-gray-400">ยังไม่เคยใช้บริการ</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                                    </div>
+                                </form>
+                            )}
                         </div>
-                        <DialogFooter className="bg-white p-6 border-t">
-                            <Button variant="outline" className="rounded-xl px-8 h-12 font-bold" onClick={() => setIsViewModalOpen(false)}>ปิดหน้าต่าง</Button>
-                            <Button className="bg-[#2563eb] text-white hover:bg-blue-700 rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#2563eb]/20" onClick={() => { setIsViewModalOpen(false); setEditingCustomer({...viewingCustomer}); setIsEditModalOpen(true); }}>
-                                แก้ไขข้อมูลลูกค้า
-                            </Button>
+                        <DialogFooter className="px-8 py-4 border-t bg-slate-50">
+                            <Button size="sm" variant="ghost" className="text-xs font-bold" onClick={() => setIsEditModalOpen(false)}>ยกเลิก</Button>
+                            <Button size="sm" className="bg-blue-600 text-white rounded-xl h-10 px-8 font-bold text-xs" onClick={(e:any) => handleEditSave(e)}>บันทึกข้อมูล</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

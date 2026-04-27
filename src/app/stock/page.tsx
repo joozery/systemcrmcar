@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SidebarLeft } from "@/components/dashboard/SidebarLeft";
-import { Bell, ChevronDown, Plus, Minus, Search, Filter, ImageIcon, X, Info, Loader2 } from "lucide-react";
+import { Bell, ChevronDown, Plus, Minus, Search, Filter, ImageIcon, X, Info, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,17 @@ export default function StockPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [editProduct, setEditProduct] = useState<any>({
+        id: "",
+        name: "",
+        category: "",
+        quantity: 0,
+        unit: "",
+        image: ""
+    });
+    const [originalEditId, setOriginalEditId] = useState("");
     const [newProduct, setNewProduct] = useState({
         name: "",
         category: "",
@@ -135,6 +145,65 @@ export default function StockPage() {
                 setNewProduct({ ...newProduct, image: reader.result as string });
             };
             reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUpdateProduct = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const res = await fetch(`/api/stock/${originalEditId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editProduct)
+            });
+
+            if (res.ok) {
+                const updatedProduct = await res.json();
+                setStockItems(prev => prev.map(item =>
+                    item.id === updatedProduct.id ? updatedProduct : item
+                ));
+                setIsEditModalOpen(false);
+                setSelectedProduct(null);
+            }
+        } catch (error) {
+            console.error("Failed to update product:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setEditProduct({ ...editProduct, image: reader.result as string });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleDeleteProduct = async (id: string, name: string) => {
+        if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า "${name}"?`)) return;
+        
+        setIsLoading(true);
+        try {
+            const res = await fetch(`/api/stock/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                setStockItems(prev => prev.filter(item => item.id !== id));
+            } else {
+                alert('ไม่สามารถลบสินค้าได้ กรุณาลองใหม่อีกครั้ง');
+            }
+        } catch (error) {
+            console.error("Failed to delete product:", error);
+            alert('เกิดข้อผิดพลาดในการลบสินค้า');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -374,7 +443,17 @@ export default function StockPage() {
                                         </div>
 
                                         <DialogFooter className="mt-6 flex justify-between sm:justify-between w-full">
-                                            <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">แก้ไขข้อมูล</Button>
+                                            <Button 
+                                                variant="outline" 
+                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                                onClick={() => {
+                                                    setEditProduct({ ...selectedProduct });
+                                                    setOriginalEditId(selectedProduct.id);
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                            >
+                                                แก้ไขข้อมูล
+                                            </Button>
                                             <Button
                                                 variant="default"
                                                 className="bg-[#2563eb] text-white hover:bg-blue-700"
@@ -469,6 +548,98 @@ export default function StockPage() {
                             </DialogContent>
                         </Dialog>
 
+                        {/* Edit Product Modal */}
+                        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>แก้ไขข้อมูลสินค้า</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleUpdateProduct} className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-id">รหัสสินค้า (SKU)</Label>
+                                        <Input
+                                            id="edit-id"
+                                            value={editProduct.id}
+                                            onChange={(e) => setEditProduct({ ...editProduct, id: e.target.value })}
+                                            className="bg-white font-mono"
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-image">อัปโหลดรูปภาพใหม่</Label>
+                                        <div className="flex items-center gap-3">
+                                            {editProduct.image ? (
+                                                <div className="relative w-10 h-10 rounded-md overflow-hidden border bg-gray-50 flex-shrink-0">
+                                                    <img src={editProduct.image} alt="Preview" className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditProduct({ ...editProduct, image: "" })}
+                                                        className="absolute top-0 right-0 bg-white/80 rounded-full p-0.5 shadow hover:bg-white"
+                                                    >
+                                                        <X size={12} className="text-gray-600" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-md border border-dashed border-gray-300 flex items-center justify-center bg-gray-50 flex-shrink-0">
+                                                    <ImageIcon size={16} className="text-gray-400" />
+                                                </div>
+                                            )}
+                                            <Input
+                                                id="edit-image"
+                                                type="file"
+                                                accept="image/*"
+                                                className="cursor-pointer file:text-sm file:font-medium file:text-gray-600 file:bg-gray-100 hover:file:bg-gray-200 file:border-0 file:rounded-md file:px-3 file:py-1 file:mr-3 h-10 text-xs"
+                                                onChange={handleEditImageChange}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-name">ชื่อสินค้า <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            id="edit-name"
+                                            required
+                                            value={editProduct.name}
+                                            onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-category">หมวดหมู่</Label>
+                                        <Input
+                                            id="edit-category"
+                                            value={editProduct.category}
+                                            onChange={(e) => setEditProduct({ ...editProduct, category: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-quantity">จำนวนคงเหลือ</Label>
+                                            <Input
+                                                id="edit-quantity"
+                                                type="number"
+                                                min="0"
+                                                value={editProduct.quantity}
+                                                onChange={(e) => setEditProduct({ ...editProduct, quantity: Number(e.target.value) })}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-unit">หน่วย</Label>
+                                            <Input
+                                                id="edit-unit"
+                                                value={editProduct.unit}
+                                                onChange={(e) => setEditProduct({ ...editProduct, unit: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <DialogFooter className="mt-4">
+                                        <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)} disabled={isSubmitting}>ยกเลิก</Button>
+                                        <Button type="submit" className="bg-[#2563eb] text-white hover:bg-blue-700" disabled={isSubmitting}>
+                                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                            บันทึกการแก้ไข
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-gray-50/50 text-gray-500 font-medium">
@@ -551,6 +722,14 @@ export default function StockPage() {
                                                             className="h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3"
                                                         >
                                                             รายละเอียด
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteProduct(item.id, item.name)}
+                                                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                                                        >
+                                                            <Trash2 size={14} />
                                                         </Button>
                                                     </div>
                                                 </td>

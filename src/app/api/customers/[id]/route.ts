@@ -9,7 +9,21 @@ export async function GET(
     try {
         await connectDB();
         const { id } = await params;
-        const customer = await Member.findById(id);
+        console.log(`[Customer Fetch] ID: ${id}`);
+        
+        // Try finding by MongoDB ID first, then by lineUserId
+        let customer;
+        if (id.startsWith('U') && id.length === 33) {
+            // Likely a LINE User ID
+            customer = await Member.findOne({ lineUserId: id });
+        } else {
+            try {
+                customer = await Member.findById(id);
+            } catch (e) {
+                // If not a valid ObjectId, try as lineUserId anyway
+                customer = await Member.findOne({ lineUserId: id });
+            }
+        }
 
         if (!customer) {
             return NextResponse.json({ error: 'Customer not found' }, { status: 404 });

@@ -6,6 +6,7 @@ export async function sendLinePushMessage(userId: string, messages: any[]) {
     }
 
     try {
+        console.log(`[LINE Push] Sending to: ${userId}`);
         const response = await fetch('https://api.line.me/v2/bot/message/push', {
             method: 'POST',
             headers: {

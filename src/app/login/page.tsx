@@ -63,13 +63,17 @@ export default function LoginPage() {
             <div className="relative z-20 w-full max-w-md px-6 animate-in fade-in zoom-in duration-700">
                 {/* Logo or Brand */}
                 <div className="flex flex-col items-center mb-10">
-                    <div className="w-16 h-16 bg-[#2563eb] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#2563eb]/30 mb-6 rotate-3">
-                        <Car size={32} className="text-white -rotate-3" />
+                    <div className="mb-6">
+                        <img 
+                            src="/logo/logoprosteam.png" 
+                            alt="Pro Steam Logo" 
+                            className="h-16 w-auto brightness-200"
+                        />
                     </div>
                     <h1 className="text-4xl font-black text-white tracking-tighter mb-2">
-                        SYSTEM <span className="text-[#2563eb]">CAR POINT</span>
+                        PRO STEAM <span className="text-[#2563eb]">CAR DETAIL</span>
                     </h1>
-                    <p className="text-gray-400 font-medium tracking-wide">MANAGEMENT SYSTEM</p>
+                    <p className="text-gray-400 font-medium tracking-wide uppercase">Management System</p>
                 </div>
 
                 {/* Glassmorphism Card */}
